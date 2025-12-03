@@ -3,8 +3,14 @@ __pychache__/
 
 *.h5
 *.keras
+*.pkl
 
 predict_all.py
 test.py
 
 tuner_result/
+
+sin.py
+sin_predict.py
+
+test/
