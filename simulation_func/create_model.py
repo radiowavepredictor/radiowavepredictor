@@ -5,7 +5,7 @@ from keras.layers import Dense, Activation
 from keras.callbacks import EarlyStopping
 from keras.regularizers import l2
 
-from func import *
+from simulation_func.simu_func import *
 
 dataset,val_dataset=load_fading_data(BATCH_SIZE,INPUT_LEN)
 print(val_dataset)
@@ -36,7 +36,7 @@ history=model.fit(
 model.save(MODEL_PATH)
 
 plt.figure()
-plt.plot(history.history['loss'], label='loss')
-plt.plot(history.history['val_loss'], label='val_loss')
+plt.plot(history.history['loss'][1:], label='loss')
+plt.plot(history.history['val_loss'][1:], label='val_loss')
 plt.legend()
 plt.show()

@@ -10,8 +10,12 @@ k_rice_list = [-np.inf, 0, 3, 5, 10, 20, 40]
 plt.figure(figsize=(9,6))
 
 for k_rice in k_rice_list:
-    fading = calc_nakagami_rice_fading(k_rice)
-    power_linear = np.abs(fading)**2
+        
+    fading_data=[]
+    for _ in range(DATA_SET_NUM):
+        fading_data.extend(calc_nakagami_rice_fading(k_rice))
+    fading_data=np.array(fading_data)
+    power_linear = np.abs(fading_data)**2
 
     power_db = 10 * np.log10(power_linear / np.mean(power_linear)) #正規化とdb変換
 

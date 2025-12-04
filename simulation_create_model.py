@@ -5,7 +5,7 @@ from keras.layers import Dense, Activation
 from keras.callbacks import EarlyStopping
 from keras.regularizers import l2
 
-from simulation_func.func import *
+from simulation_func.simu_func import *
 
 dataset,val_dataset=load_fading_data(BATCH_SIZE,INPUT_LEN)
 print(val_dataset)

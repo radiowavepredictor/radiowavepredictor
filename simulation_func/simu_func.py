@@ -3,16 +3,17 @@ import matplotlib.pyplot as plt
 import tensorflow as tf
 from keras.utils import timeseries_dataset_from_array
 
-from setting import *
+from simulation_func.setting import *
+from func import mw_to_dbm,normalize
 
 def calc_fading():
     theta = np.random.rand(L) * 2 * np.pi
     phi = np.random.rand(L) * 2 * np.pi
     
     fading_data_list=[]
-    x=np.zeros(L)
+    x=0.0
     for _ in range(DATA_NUM):
-        x+=np.random.uniform(-DELTA_D,DELTA_D,L)
+        x+=DELTA_D
         fading_data = np.sum(R * np.exp(1j * (theta + (2 * np.pi / LAMBDA_0) * x * np.cos(phi))))
         fading_data /= np.sqrt(L)
         fading_data_list.append(fading_data)
@@ -26,7 +27,7 @@ def calc_nakagami_rice_fading(k_rice=K_RICE):
     direct_data_list=[]
     x=0
     for _ in range(DATA_NUM):
-        x+=np.random.uniform(-DELTA_D,DELTA_D)
+        x+=DELTA_D
         direct_data = np.sqrt(k_rice / (k_rice + 1.0)) * np.exp(1j * ((2 * np.pi / LAMBDA_0) * x + theta0))
         direct_data_list.append(direct_data)
     direct_data_list=np.array(direct_data_list)
@@ -44,10 +45,8 @@ def generate_fading_dataset(input_len,data_set_num=DATA_SET_NUM):
     fading_data_list_list=np.array(fading_data_list_list)
 
     power = np.abs(fading_data_list_list) ** 2
-    #power_db = 10 * np.log10(power)
-    #data_normalized = normalize(power_db)
-    #data_normalized=power_db
-    data_normalized=power
+    power_db = mw_to_dbm(power)
+    data_normalized = normalize(power_db)
     dataset_arr=[]
     for i in range(data_set_num):
         targets = data_normalized[i][input_len:] 
@@ -80,30 +79,3 @@ def load_fading_data(batch_size,input_len):
     val_dataset = generate_fading_dataset(input_len,DATA_SET_NUM//4)
     val_dataset = val_dataset.batch(batch_size).prefetch(tf.data.AUTOTUNE)
     return train_dataset,val_dataset
-
-### RNNで使えるようにデータ配列を入力と答えに分離する関数(再帰予測する際にしか使いません)
-def make_data_set(changed_data,input_len):
-    data,target=[],[]
-    
-    for i in range(len(changed_data)-input_len):
-        data.append(changed_data[i:i + input_len])
-        target.append(changed_data[i + input_len])
-
-    # RNN用に3次元のデータに変更する
-    re_data = np.array(data).reshape(len(data), input_len, 1)
-    re_target = np.array(target).reshape(len(data), 1)
-
-    return (re_data, re_target)
-    
-### フェージングデータをプロットする用のコード ###
-'''
-#dataset=calc_nakagami_rice_fading()
-dataset=calc_fading()
-plt.figure()
-#plt.scatter(range(NUM),dataset,color="r",alpha=0.5,label="fading_data")
-#plt.scatter(range(NUM),dataset,color="r",alpha=0.5,label="fading_data",s=1)
-plt.plot(range(DATA_NUM),dataset,color="r",label="fading_data")
-plt.legend()
-plt.show()
-
-'''
