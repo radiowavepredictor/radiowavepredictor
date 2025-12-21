@@ -1,7 +1,8 @@
 ####レイリーフェージングのみでのデータ生成を行いプロットする####
 import numpy as np
 import matplotlib.pyplot as plt
-from simu_func import *
+
+from simulation_func.simu_func import *
 
 fading=calc_fading()
 

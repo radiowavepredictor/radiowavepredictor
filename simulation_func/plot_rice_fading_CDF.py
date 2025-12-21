@@ -3,7 +3,8 @@
 import numpy as np
 from matplotlib.ticker import ScalarFormatter
 import matplotlib.pyplot as plt
-from func import *
+
+from simulation_func.simu_func import *
 
 k_rice_list = [-np.inf, 0, 3, 5, 10, 20, 40]
 

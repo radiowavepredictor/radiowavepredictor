@@ -14,3 +14,6 @@ sin.py
 sin_predict.py
 
 test/
+
+mlruns/
+mlflow.db
