@@ -6,8 +6,8 @@ from keras.layers import Dense, Activation
 from keras.callbacks import EarlyStopping
 from keras.regularizers import l2
 
-from setting import *
-from func import load_training_data
+from measurement.setting import *
+from share_func import load_training_data
 
 #コード実行時間計測
 start_time=time.time()
@@ -31,9 +31,9 @@ model.add(Input(shape=(INPUT_LEN, len(IN_FEATURES))))
 
 for hidden_num in HIDDEN_NUMS[:-1]:
     #model.add(USE_RNN_LAYER(hidden_num, return_sequences=True))
-    model.add(USE_RNN_LAYER(hidden_num, return_sequences=True,kernel_regularizer=l2(1e-5)))
+    model.add(USE_RNN_TYPE(hidden_num, return_sequences=True,kernel_regularizer=l2(1e-5)))
 #model.add(USE_RNN_LAYER(HIDDEN_NUMS[-1], return_sequences=False))
-model.add(USE_RNN_LAYER(HIDDEN_NUMS[-1], return_sequences=False,kernel_regularizer=l2(1e-5)))
+model.add(USE_RNN_TYPE(HIDDEN_NUMS[-1], return_sequences=False,kernel_regularizer=l2(1e-5)))
 model.add(Dense(OUT_STEPS_NUM))
 model.add(Activation("linear"))
 optimizer = USE_OPTIMIZER(learning_rate=LEARNING_RATE)

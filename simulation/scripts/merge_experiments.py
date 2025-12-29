@@ -1,3 +1,6 @@
+### mlflowではなくjson形式で保存したデータをmlflowのデータに合体させる ###
+### mlrunsフォルダとexp_runsフォルダ(名前変えてるかも)両方をRadioWavePredictフォルダの直下において実行する ###
+### EXPERIMENT_NAME(実験名)が適切か、合体するデータ同士で保存してるデータの内容が全然違わないか、などを確認してから実行する ###
 import json
 import mlflow
 from pathlib import Path

@@ -6,8 +6,8 @@ import os
 ### 生成するフェージングデータに関する設定###
 L = 30 # 多重波の数
 DELTA_D=0.005 #サンプル間隔[m]
-DATA_NUM=1002 #一つのデータセットのデータ数
-DATA_SET_NUM = 8 #作成するデータセットの数(測定におけるコース数)
+DATA_NUM=1012 #一つのデータセットのデータ数
+DATA_SET_NUM = 10 #作成するデータセットの数(測定におけるコース数)
  
 K_RICE = 0
 R = 1  # 反射波の振幅
@@ -17,8 +17,8 @@ F = 1.298e9  # キャリア周波数 [Hz]
 LAMBDA_0 = C / F # 波長 [m]（=c/f）
 
 ### 学習モデルに関する設定 ### 
-USE_RNN_LAYER = SimpleRNN #使用するRNNの種類、layerを作るときに使用するclassを直接指定する
-USE_OPTIMIZER = Adam
+RNN_TYPE = SimpleRNN #使用するRNNの種類、layerを作るときに使用するclassを直接指定する
+OPTIMIZER_TYPE = Adam
 
 IN_FEATURES = 1
 INPUT_LEN = 50
@@ -40,8 +40,7 @@ PREDICT_LEN = 500 #再帰で予測する長さ
 EXPERIMENT_NAME="simulation"
 JST = timezone(timedelta(hours=9))
 RUN_NAME = datetime.now(JST).strftime("%Y_%m_%d_%H_%M")
-MODEL_NAME="model.keras" #基本変えない
-USE_MLFLOW=True #mlflowを使うかどうか(mlflowが使えない環境ではこれを指定)
+USE_MLFLOW=True #mlflowを使うかどうか(mlflowが使えない環境ではFalseを指定)
 
 ### mlflowを使わないでjsonで保存するとき ###
 BASE_DIR = "exp_runs"

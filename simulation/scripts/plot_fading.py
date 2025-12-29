@@ -1,4 +1,5 @@
 ####レイリーフェージングのみでのデータ生成を行いプロットする####
+#### データが正しく生成されているかどうかの確認コード #####
 import numpy as np
 import matplotlib.pyplot as plt
 

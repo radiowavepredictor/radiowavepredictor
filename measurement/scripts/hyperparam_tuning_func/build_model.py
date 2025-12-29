@@ -1,9 +1,10 @@
+### keras_tunerを使おうとしたときのコードです 今は動かないので参考程度に ###
 from keras.models import Sequential
 from keras.layers import Dense, Input
 from keras.optimizers import AdamW
 from keras_tuner import HyperModel
 
-from setting import *
+from measurement.setting import *
 
 class RNNHyperModel(HyperModel):
     def build(self, hp):

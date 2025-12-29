@@ -1,35 +1,11 @@
 import numpy as np
-import pandas as pd
 import os
 path = os.path.dirname(__file__)
+import pandas as pd
 import tensorflow as tf
 from keras.utils import timeseries_dataset_from_array
 
-def normalize(data):
-    return (data - data.mean(axis=0)) / data.std(axis=0)
-    
-def denormalize(normalized_data,base_data):
-    return normalized_data * base_data.std(axis=0) + base_data.mean(axis=0)
-
-def dbm_to_mw(dbm):
-    return 10**(dbm / 10)
-
-def mw_to_dbm(mw):
-    return 10*np.log10(mw)
-
-def min_max_normalize(data, feature_range=(0, 1)):
-    data_min = data.min(axis=0)
-    data_max = data.max(axis=0)
-    scale = feature_range[1] - feature_range[0]
-    normalized = feature_range[0] + (data - data_min) * scale / (data_max - data_min)
-    return normalized
-
-def min_max_denormalize(normalized_data, base_data, feature_range=(0, 1)):
-    base_data_min = base_data.min(axis=0)
-    base_data_max = base_data.max(axis=0)
-    scale = feature_range[1] - feature_range[0]
-    data = (normalized_data - feature_range[0]) * (base_data_max - base_data_min) / scale + base_data_min
-    return data
+from share_func import normalize
 
 #### ここから↓結構分かりづらいかも ごめんなさい ####
 def csv_to_dataset(csv_path,input_len,in_features,out_features,start_cut_index,end_cut_index): 

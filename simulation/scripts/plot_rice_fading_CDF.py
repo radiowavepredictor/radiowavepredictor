@@ -1,5 +1,5 @@
-###### 電力と累積確率関数のグラフを表示する #######
-###### データが正しく生成されているの確認用 #######
+###### 中上ライス環境で電力と累積確率関数のグラフを表示する #######
+###### データが正しく生成されているかの確認用コード #######
 import numpy as np
 from matplotlib.ticker import ScalarFormatter
 import matplotlib.pyplot as plt

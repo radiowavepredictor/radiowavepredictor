@@ -1,11 +1,11 @@
+### keras_tunerを使おうとしたときのコードです 今は動かないので参考程度にしてください ###
 from keras_tuner.tuners import Hyperband
 from keras.callbacks import EarlyStopping
 
-from setting import *
-from func import load_training_data
+from measurement.setting import *
+from share_func import load_training_data
 from hyperparam_tuning.build_model import RNNHyperModel
 
-# プログラムの実行はルートディレクトリにあるhyperparam.pyから行ってください
 def layer_unit_tuning():
     train_dataset,validation_dataset=load_training_data(TRAINING_COURCES,VALIDATION_COURCES,LEARN_MODE,BATCH_SIZE,INPUT_LEN)
 

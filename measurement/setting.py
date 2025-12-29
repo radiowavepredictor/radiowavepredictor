@@ -8,7 +8,7 @@ VALIDATION_COURCES=[3,9] #検証に使うコース番号群
 LEARN_MODE="t" #学習データの種類 tなら時間、dなら距離
 
 ### 学習モデルに関する設定 ### 
-USE_RNN_LAYER = SimpleRNN #使用するRNNの種類、layerを作るときに使用するclassを直接指定する
+USE_RNN_TYPE = SimpleRNN #使用するRNNの種類、layerを作るときに使用するclassを直接指定する
 USE_OPTIMIZER = AdamW
 
 INPUT_LEN = 50
@@ -24,7 +24,7 @@ EPOCHS = 200
 LEARNING_RATE = 0.001
 
 #作成するモデルのパスと名前(予測でもこれを参照しています)
-MODEL_PATH = path+f"/model/simulation_fading_{USE_RNN_LAYER.__name__}_{INPUT_LEN}_"+"_".join(map(str, HIDDEN_NUMS))+".keras"
+MODEL_PATH = path+f"/model/simulation_fading_{USE_RNN_TYPE.__name__}_{INPUT_LEN}_"+"_".join(map(str, HIDDEN_NUMS))+".keras"
 
 ### 予測に関する設定 ###
 PREDICT_COURCE=15 #予測したいコース番号
