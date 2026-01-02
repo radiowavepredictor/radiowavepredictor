@@ -11,7 +11,9 @@ from simulation.schema_setting import FadingConfig, RnnConfig, SaveConfig
 from simulation.setting import FADING_CFG, RNN_CFG, SAVE_CFG
 from simulation.grid_params import PARAMS_LIST
 from common.common_func import create_model, predict
+from common.common_setting import BASE_DIR
 import uuid
+
 
 def run_single_experiment(params):
     # パラメータ変数を用意する
@@ -35,7 +37,12 @@ def run_single_experiment(params):
         learning_rate=params["LEARNING_RATE"],
     )
 
-    save_cfg:SaveConfig=replace(SAVE_CFG,run_name=uuid.uuid4().hex[:8])
+    run_name = uuid.uuid4().hex[:8]
+    save_cfg: SaveConfig = replace(
+        SAVE_CFG,
+        run_name=run_name,
+        save_dir=f"{BASE_DIR}/{SAVE_CFG.experiment_name}/{run_name}",
+    )
 
     dataset, val_dataset = load_fading_data(fading_cfg, rnn_cfg)
 
@@ -50,7 +57,7 @@ def run_single_experiment(params):
         rnn_cfg.out_steps_num,
         rnn_cfg.learning_rate,
         rnn_cfg.epochs,
-        verbose='silent'
+        verbose="silent",
     )
 
     run_id = save_create_data(
@@ -59,7 +66,7 @@ def run_single_experiment(params):
         result["training_time"],
         save_cfg,
         fading_cfg,
-        rnn_cfg
+        rnn_cfg,
     )
 
     fading_data = calc_nakagami_rice_fading(fading_cfg)
@@ -84,6 +91,5 @@ def run_single_experiment(params):
 if __name__ == "__main__":
     print(f"{len(PARAMS_LIST)}の処理を並列実行します")
     Parallel(n_jobs=4, verbose=10)(
-        delayed(run_single_experiment)(params)
-        for params in PARAMS_LIST
+        delayed(run_single_experiment)(params) for params in PARAMS_LIST
     )
