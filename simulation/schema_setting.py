@@ -24,7 +24,6 @@ class RnnConfig:
     batch_size:int
     epochs:int
     learning_rate:float
-    predict_num:int
 
 @dataclass(frozen=True)
 class SaveConfig:
@@ -35,3 +34,5 @@ class SaveConfig:
     run_name:str
     use_mlflow:bool
     save_dir:str
+    predicted_dataset_num:int
+    recursive_num:int

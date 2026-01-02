@@ -7,7 +7,7 @@ import tensorflow as tf
 from keras.utils import timeseries_dataset_from_array
 
 from simulation.schema_setting import SaveConfig, FadingConfig, RnnConfig
-from common.common_func import mw_to_dbm, normalize
+from common.common_func import mw_to_dbm, normalize, predict
 
 
 def calc_fading(fading_cfg: FadingConfig):
@@ -94,6 +94,34 @@ def load_fading_data(fading_cfg: FadingConfig, rnn_cfg: RnnConfig):
     return train_dataset, val_dataset
 
 
+### 複数のデータセットで予測を行いrmseの平均を算出する 1回目のデータセットだけ詳細な情報を返す
+def evaluate_model(
+    model, fading_cfg: FadingConfig, rnn_cfg: RnnConfig, save_cfg: SaveConfig
+):
+    # 中上ライスのデータを取得(kerasモデルに渡せるように加工されていない状態)
+    fading_data = calc_nakagami_rice_fading(fading_cfg)
+
+    # predict関数の中でkerasモデルに渡せるように加工したり正規化などをしている
+    # ???create_model関数には加工してからデータを渡すのに、predict関数には加工前のデータを渡してるの変じゃない?
+    first_result = predict(
+        model, fading_data, rnn_cfg.input_len, save_cfg.plot_start, save_cfg.plot_range
+    )
+
+    rmse_sum = first_result["rmse"]
+    predict_num = save_cfg.predicted_dataset_num
+
+    for _ in range(predict_num - 1):  # ↑で一回実行してるのでその分減らす
+        fading_data = calc_nakagami_rice_fading(fading_cfg)
+
+        result_i = predict(
+            model,fading_data,rnn_cfg.input_len,save_cfg.plot_start,save_cfg.plot_range,
+        )
+        rmse_sum += result_i["rmse"]
+
+    rmse_mean = rmse_sum / predict_num
+    return first_result,rmse_mean
+
+
 ### モデル作成時のデータを保存する ###
 def save_create_data(
     model,
@@ -127,7 +155,7 @@ def save_create_data(
             mlflow.log_param("Epochs", rnn_cfg.epochs)
 
             mlflow.log_figure(history_figure, "loss_curve.png")
-            mlflow.log_metric("training_time", training_time)
+            mlflow.log_metric("Training_Time", training_time)
             artifact_dir = mlflow.get_artifact_uri()
             model_path = os.path.join(artifact_dir.replace("file:", ""), "model.keras")
             model.save(model_path)
@@ -160,7 +188,7 @@ def save_create_data(
                 "Optimizer": rnn_cfg.optimizer_class.__name__,
                 "Epochs": rnn_cfg.epochs,
             },
-            "metrics": {"training_time": training_time},
+            "metrics": {"Training_Time": training_time},
         }
         save_dir = save_cfg.save_dir
         with open(os.path.join(save_dir, "data.json"), "w") as f:
@@ -173,7 +201,13 @@ def save_create_data(
 
 
 def save_predict_data(
-    run_id, true_data, predict_data, rmse, predict_result_fig, save_cfg: SaveConfig
+    run_id,
+    true_data,
+    predict_data,
+    rmse,
+    predict_result_fig,
+    rmse_mean,
+    save_cfg: SaveConfig,
 ):
 
     if save_cfg.use_mlflow:
@@ -188,7 +222,8 @@ def save_predict_data(
             pred_path = os.path.join(artifact_path, "predicted.npy")
             np.save(true_path, true_data)
             np.save(pred_path, predict_data)
-            mlflow.log_metric("rmse", rmse)
+            mlflow.log_metric("RMSE", rmse)
+            mlflow.log_metric("RMSE_MEAN", rmse_mean)
             mlflow.log_figure(predict_result_fig, "predict_results.png")
         print("実験名(experiment_name):", save_cfg.experiment_name)
         print("実行id(run_id):", run_id)
@@ -198,7 +233,8 @@ def save_predict_data(
         print("jsonで保存します")
         with open(f"{save_dir}/data.json", "r") as f:
             data = json.load(f)
-        data["metrics"]["rmse"] = rmse
+        data["metrics"]["RMSE"] = rmse
+        data["metrics"]["RMSE_MEAN"] = rmse_mean
 
         with open(f"{save_dir}/data.json", "w") as f:
             json.dump(data, f, indent=2)

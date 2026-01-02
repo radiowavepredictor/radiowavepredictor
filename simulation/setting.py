@@ -4,9 +4,9 @@ from keras.optimizers import Adam,AdamW,RMSprop
 from common.common_setting import *
 from simulation.schema_setting import FadingConfig,RnnConfig,SaveConfig
 
-### 生成するフェージングデータに関する設定###
-DATA_NUM=1041 #一つのデータセットのデータ数
-DATA_SET_NUM = 10 #作成するデータセットの数(測定におけるコース数)
+### 生成するフェージングデータに関する設定 ###
+DATA_NUM=3000 #一つのデータセットのデータ数
+DATA_SET_NUM = 15 #作成するデータセットの数(測定におけるコース数)
 L = 30 # 多重波の数
 DELTA_D=0.005 #サンプル間隔[m]
 
@@ -14,7 +14,7 @@ C = 3e8  # 光速 [m/s]
 F = 1.298e9  # キャリア周波数 [Hz]
 LAMBDA_0 = C / F # 波長 [m]（=c/f）
 R = 1  # 反射波の振幅
-K_RICE = 0
+K_RICE = 40
 #R_0 = np.sqrt(K_RICE*R*R) #直接波の振幅
 
 ### 学習モデルに関する設定 ### 
@@ -29,13 +29,11 @@ BATCH_SIZE = 256
 EPOCHS = 100
 LEARNING_RATE = 0.0003
 
-#作成するモデルのパスと名前(予測でもこれを参照しています)
-#MODEL_PATH = f"simulation_func/model/{USE_RNN_LAYER.__name__}_{INPUT_LEN}_"+"_".join(map(str, HIDDEN_NUMS))+".keras"
+### 予測、保存に関する設定 ###
+PREDICTED_DATASET_NUM = 3 # RMSEを出すときに複数のデータセットを予測して平均値を求めるが、そのときいくつのデータセットを使用するか
+RECURSIVE_NUM = 500 #再帰予測で予測する回数(現状使ってない)
 
-### 予測に関する設定 ###
-PREDICT_NUM = 500 #再帰予測で予測する回数(現状使ってない)
-
-### ↑↑を構造体にまとめる
+### ↑↑を構造体にまとめる ###
 FADING_CFG = FadingConfig(
     l=L,
     data_num=DATA_NUM,
@@ -55,8 +53,7 @@ RNN_CFG = RnnConfig(
     hidden_nums=HIDDEN_NUMS,
     batch_size=BATCH_SIZE,
     epochs=EPOCHS,
-    learning_rate=LEARNING_RATE,
-    predict_num=PREDICT_NUM
+    learning_rate=LEARNING_RATE
 )
 
 SAVE_CFG = SaveConfig(
@@ -67,4 +64,7 @@ SAVE_CFG = SaveConfig(
     run_name=RUN_NAME,
     use_mlflow=USE_MLFLOW,
     save_dir=SAVE_DIR,
+    
+    predicted_dataset_num=PREDICTED_DATASET_NUM,
+    recursive_num=RECURSIVE_NUM
 )

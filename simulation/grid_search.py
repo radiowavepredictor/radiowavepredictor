@@ -1,18 +1,13 @@
 from dataclasses import replace
 from joblib import Parallel, delayed
+import uuid
 
-from simulation.simu_func import (
-    load_fading_data,
-    save_create_data,
-    calc_nakagami_rice_fading,
-    save_predict_data,
-)
+from simulation.simu_func import *
 from simulation.schema_setting import FadingConfig, RnnConfig, SaveConfig
 from simulation.setting import FADING_CFG, RNN_CFG, SAVE_CFG
-from simulation.grid_params import PARAMS_LIST
-from common.common_func import create_model, predict
+from simulation.grid_params import PARAMS_LIST,N_JOBS
+from common.common_func import create_model
 from common.common_setting import BASE_DIR
-import uuid
 
 
 def run_single_experiment(params):
@@ -46,7 +41,7 @@ def run_single_experiment(params):
 
     dataset, val_dataset = load_fading_data(fading_cfg, rnn_cfg)
 
-    result = create_model(
+    create_result = create_model(
         dataset,
         val_dataset,
         rnn_cfg.input_len,
@@ -57,39 +52,36 @@ def run_single_experiment(params):
         rnn_cfg.out_steps_num,
         rnn_cfg.learning_rate,
         rnn_cfg.epochs,
-        verbose="silent",
+        verbose=0,
     )
 
     run_id = save_create_data(
-        result["model"],
-        result["history_figure"],
-        result["training_time"],
+        create_result["model"],
+        create_result["history_figure"],
+        create_result["training_time"],
         save_cfg,
         fading_cfg,
         rnn_cfg,
     )
 
-    fading_data = calc_nakagami_rice_fading(fading_cfg)
-
-    model = result["model"]
-    result = predict(
-        model, fading_data, rnn_cfg.input_len, save_cfg.plot_start, save_cfg.plot_range
-    )
-
+    model = create_result["model"]
+    
+    first_result,rmse_mean=evaluate_model(model,fading_cfg,rnn_cfg,save_cfg)
+    
     save_predict_data(
         run_id,
-        result["true_data"],
-        result["predict_data"],
-        result["rmse"],
-        result["predict_result_figure"],
+        first_result["true_data"],
+        first_result["predict_data"],
+        first_result["rmse"],
+        first_result["predict_result_figure"],
+        rmse_mean,
         save_cfg,
     )
 
     return run_id
 
-
 if __name__ == "__main__":
     print(f"{len(PARAMS_LIST)}の処理を並列実行します")
-    Parallel(n_jobs=4, verbose=10)(
+    Parallel(n_jobs=N_JOBS, verbose=10)(
         delayed(run_single_experiment)(params) for params in PARAMS_LIST
     )
