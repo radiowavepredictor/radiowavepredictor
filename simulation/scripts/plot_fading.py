@@ -1,11 +1,12 @@
-####レイリーフェージングのみでのデータ生成を行いプロットする####
+####レイリーフェージングのみ(反射波のみ)でのデータ生成を行いプロットする####
 #### データが正しく生成されているかどうかの確認コード #####
 import numpy as np
 import matplotlib.pyplot as plt
 
-from simulation_func.simu_func import *
+from simulation.simu_func import *
+from simulation.setting import FADING_CFG,DATA_NUM,DELTA_D
 
-fading=calc_fading()
+fading=calc_fading(FADING_CFG)
 
 power = np.abs(fading)**2
 

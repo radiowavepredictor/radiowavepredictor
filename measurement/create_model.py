@@ -7,7 +7,7 @@ from keras.callbacks import EarlyStopping
 from keras.regularizers import l2
 
 from measurement.setting import *
-from share_func import load_training_data
+from common.common_func import load_training_data
 
 #コード実行時間計測
 start_time=time.time()

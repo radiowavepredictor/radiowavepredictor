@@ -55,7 +55,7 @@ def create_model(
 
     for hidden_num in hidden_nums[:-1]:
         model.add(rnn_class(hidden_num, return_sequences=True))
-        #model.add(USE_RNN_LAYER(hidden_num, return_sequences=True,kernel_regularizer=l2(1e-5))) L2正則化をするときはコメントを外す
+        #model.add(USE_RNN_LAYER(hidden_num, return_sequences=True,kernel_regularizer=l2(1e-5))) L2正則化をするときはこっちを使う
     model.add(rnn_class(hidden_nums[-1], return_sequences=False))
     #model.add(USE_RNN_LAYER(HIDDEN_NUMS[-1], return_sequences=False,kernel_regularizer=l2(1e-5)))
     model.add(Dense(out_steps_num))
@@ -102,7 +102,7 @@ def predict(
         targets=None,
         sequence_length=input_len,
         batch_size=1,
-        shuffle=None
+        shuffle=False
     )
 
     predicted = model.predict(x)

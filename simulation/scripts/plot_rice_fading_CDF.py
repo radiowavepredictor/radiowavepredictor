@@ -1,20 +1,23 @@
 ###### 中上ライス環境で電力と累積確率関数のグラフを表示する #######
 ###### データが正しく生成されているかの確認用コード #######
 import numpy as np
+from dataclasses import replace
 from matplotlib.ticker import ScalarFormatter
 import matplotlib.pyplot as plt
 
-from simulation_func.simu_func import *
+from simulation.setting import FADING_CFG
+from simulation.simu_func import calc_nakagami_rice_fading
 
 k_rice_list = [-np.inf, 0, 3, 5, 10, 20, 40]
 
 plt.figure(figsize=(9,6))
 
-for k_rice in k_rice_list:
+for k_rice_i in k_rice_list:
         
     fading_data=[]
-    for _ in range(DATA_SET_NUM):
-        fading_data.extend(calc_nakagami_rice_fading(k_rice))
+    for _ in range(FADING_CFG.data_set_num):
+        fading_cfg_i=replace(FADING_CFG,k_rice=k_rice_i)
+        fading_data.extend(calc_nakagami_rice_fading(fading_cfg_i))
     fading_data=np.array(fading_data)
     power_linear = np.abs(fading_data)**2
 
@@ -25,10 +28,10 @@ for k_rice in k_rice_list:
     cdf = np.arange(1, len(sorted_power)+1) / len(sorted_power) * 100
 
     # ラベル表示
-    if np.isinf(k_rice):
+    if np.isinf(k_rice_i):
         label = "K = -∞ (Rayleigh)"
     else:
-        label = f"K = {k_rice}"
+        label = f"K = {k_rice_i}"
 
     plt.plot(sorted_power, cdf, label=label)
 

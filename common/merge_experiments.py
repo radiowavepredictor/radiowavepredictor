@@ -4,7 +4,9 @@
 import json
 import mlflow
 from pathlib import Path
-from simulation_func.simu_func import *
+
+from simulation.simu_func import *
+from common.common_setting import *
 
 experiment_dir=Path(f"{BASE_DIR}/{EXPERIMENT_NAME}")
 
@@ -35,4 +37,4 @@ for run_dir in experiment_dir.iterdir():
 
         for item in run_dir.iterdir():
             if item.name != "data.json":
-                mlflow.log_artifact(item)
+                mlflow.log_artifact(str(item))

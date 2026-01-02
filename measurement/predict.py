@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from keras.models import load_model
 
 from measurement.setting import *
-from share_func import *
+from common.common_func import *
 
 
 csv_path= f"{path}/result/WAVE{PREDICT_COURCE:04d}/result_n{LEARN_MODE}-001.csv" 

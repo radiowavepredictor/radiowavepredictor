@@ -5,7 +5,7 @@ import pandas as pd
 import tensorflow as tf
 from keras.utils import timeseries_dataset_from_array
 
-from share_func import normalize
+from common.common_func import normalize
 
 #### ここから↓結構分かりづらいかも ごめんなさい ####
 def csv_to_dataset(csv_path,input_len,in_features,out_features,start_cut_index,end_cut_index): 
