@@ -1,4 +1,5 @@
 from dataclasses import replace
+from joblib import Parallel, delayed
 
 from simulation.simu_func import (
     load_fading_data,
@@ -10,8 +11,9 @@ from simulation.schema_setting import FadingConfig, RnnConfig, SaveConfig
 from simulation.setting import FADING_CFG, RNN_CFG, SAVE_CFG
 from simulation.grid_params import PARAMS_LIST
 from common.common_func import create_model, predict
+import uuid
 
-for params in PARAMS_LIST:
+def run_single_experiment(params):
     # パラメータ変数を用意する
     # setting.pyから、grid_params.pyで設定した部分だけを変更する形で用意する
     fading_cfg: FadingConfig = replace(
@@ -33,6 +35,8 @@ for params in PARAMS_LIST:
         learning_rate=params["LEARNING_RATE"],
     )
 
+    save_cfg:SaveConfig=replace(SAVE_CFG,run_name=uuid.uuid4().hex[:8])
+
     dataset, val_dataset = load_fading_data(fading_cfg, rnn_cfg)
 
     result = create_model(
@@ -46,32 +50,24 @@ for params in PARAMS_LIST:
         rnn_cfg.out_steps_num,
         rnn_cfg.learning_rate,
         rnn_cfg.epochs,
+        verbose='silent'
     )
-
-    print("\n\n")
-    print("######モデル作成の実行結果######")
 
     run_id = save_create_data(
         result["model"],
         result["history_figure"],
         result["training_time"],
-        SAVE_CFG,
+        save_cfg,
         fading_cfg,
-        rnn_cfg,
+        rnn_cfg
     )
-
-    print(f"実行時間:{result['training_time']:.2f}秒")
-    print("##############################")
 
     fading_data = calc_nakagami_rice_fading(fading_cfg)
 
     model = result["model"]
     result = predict(
-        model, fading_data, rnn_cfg.input_len, SAVE_CFG.plot_start, SAVE_CFG.plot_range
+        model, fading_data, rnn_cfg.input_len, save_cfg.plot_start, save_cfg.plot_range
     )
-
-    print("\n\n")
-    print("########予測の実行結果########")
 
     save_predict_data(
         run_id,
@@ -79,8 +75,15 @@ for params in PARAMS_LIST:
         result["predict_data"],
         result["rmse"],
         result["predict_result_figure"],
-        SAVE_CFG,
+        save_cfg,
     )
 
-    print(f"rmse:{result['rmse']:.2f}")
-    print("##############################")
+    return run_id
+
+
+if __name__ == "__main__":
+    print(f"{len(PARAMS_LIST)}の処理を並列実行します")
+    Parallel(n_jobs=4, verbose=10)(
+        delayed(run_single_experiment)(params)
+        for params in PARAMS_LIST
+    )

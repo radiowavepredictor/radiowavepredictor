@@ -5,7 +5,7 @@ from common.common_setting import *
 from simulation.schema_setting import FadingConfig,RnnConfig,SaveConfig
 
 ### 生成するフェージングデータに関する設定###
-DATA_NUM=1022 #一つのデータセットのデータ数
+DATA_NUM=1041 #一つのデータセットのデータ数
 DATA_SET_NUM = 10 #作成するデータセットの数(測定におけるコース数)
 L = 30 # 多重波の数
 DELTA_D=0.005 #サンプル間隔[m]

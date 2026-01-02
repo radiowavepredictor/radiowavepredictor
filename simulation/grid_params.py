@@ -6,9 +6,9 @@ from itertools import product
 GRID_PARAMS = {
     # --- Data params ---
     "DELTA_D": [0.005],
-    "DATA_NUM": [1000, 2000],
-    "DATA_SET_NUM": [10, 50],
-    "K_RICE": [0],
+    "DATA_NUM": [10004, 1005,1006],
+    "DATA_SET_NUM": [15, 25],
+    "K_RICE": [1,0],
     # --- Model params ---
     "RNN_TYPE": [SimpleRNN],
     "OPTIMIZER": [Adam],

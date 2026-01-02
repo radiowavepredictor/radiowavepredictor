@@ -47,6 +47,7 @@ def create_model(
     out_steps_num,
     learning_rate,
     epochs,
+    verbose='auto', #ログの表示設定
     ):
     
     print("🚀 新しいモデルを作成します")
@@ -69,6 +70,7 @@ def create_model(
         epochs=epochs,
         validation_data=val_dataset,
         callbacks=[EarlyStopping(monitor='val_loss', mode='auto', patience=10)],
+        verbose=verbose, 
     )
 
     end_time=time.time()
