@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 
 from simulation.simu_func import load_fading_data,save_create_data
-from simulation.setting import FADING_CFG,RNN_CFG,SAVE_CFG
+from simulation.configs.config import FADING_CFG,RNN_CFG,SAVE_CFG
 from common.common_func import create_model
 
 dataset,val_dataset=load_fading_data(FADING_CFG,RNN_CFG)
@@ -31,9 +31,9 @@ run_id=save_create_data(
     RNN_CFG
 )
 
-with open("./simulation/run_id.txt","w") as f:
+with open("./simulation/scripts/run_id.txt","w") as f:
     f.write(run_id)
-    print(f"実行{SAVE_CFG.use_mlflow if "id" else "名"}idをrun_id.txtに書き込みました")
+    print(f"実行{SAVE_CFG.use_mlflow if "id" else "名"}をrun_id.txtに書き込みました")
 print(f"実行時間:{result['training_time']:.2f}秒")
 print("##################################################")
 

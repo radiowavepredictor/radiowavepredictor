@@ -6,7 +6,7 @@ from dataclasses import replace
 import tensorflow as tf
 from keras.utils import timeseries_dataset_from_array
 
-from simulation.schema_setting import SaveConfig, FadingConfig, RnnConfig
+from simulation.configs.cfg_schema import SaveConfig, FadingConfig, RnnConfig
 from common.common_func import mw_to_dbm, normalize, predict
 
 

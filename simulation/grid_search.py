@@ -1,14 +1,11 @@
 from dataclasses import replace
 from joblib import Parallel, delayed
-import uuid
 
 from simulation.simu_func import *
-from simulation.schema_setting import FadingConfig, RnnConfig, SaveConfig
-from simulation.setting import FADING_CFG, RNN_CFG, SAVE_CFG
-from simulation.grid_params import PARAMS_LIST,N_JOBS
+from simulation.configs.cfg_schema import FadingConfig, RnnConfig, SaveConfig
+from simulation.configs.config import FADING_CFG, RNN_CFG, SAVE_CFG
+from simulation.configs.grid_cfg import PARAMS_LIST,N_JOBS
 from common.common_func import create_model
-from common.common_setting import BASE_DIR
-
 
 def run_single_experiment(params):
     # パラメータ変数を用意する
@@ -32,13 +29,6 @@ def run_single_experiment(params):
         learning_rate=params["LEARNING_RATE"],
     )
 
-    run_name = uuid.uuid4().hex[:8]
-    save_cfg: SaveConfig = replace(
-        SAVE_CFG,
-        run_name=run_name,
-        save_dir=f"{BASE_DIR}/{SAVE_CFG.experiment_name}/{run_name}",
-    )
-
     dataset, val_dataset = load_fading_data(fading_cfg, rnn_cfg)
 
     create_result = create_model(
@@ -59,14 +49,14 @@ def run_single_experiment(params):
         create_result["model"],
         create_result["history_figure"],
         create_result["training_time"],
-        save_cfg,
+        SAVE_CFG,
         fading_cfg,
         rnn_cfg,
     )
 
     model = create_result["model"]
     
-    first_result,rmse_mean=evaluate_model(model,fading_cfg,rnn_cfg,save_cfg)
+    first_result,rmse_mean=evaluate_model(model,fading_cfg,rnn_cfg,SAVE_CFG)
     
     save_predict_data(
         run_id,
@@ -75,13 +65,13 @@ def run_single_experiment(params):
         first_result["rmse"],
         first_result["predict_result_figure"],
         rmse_mean,
-        save_cfg,
+        SAVE_CFG,
     )
 
     return run_id
 
 if __name__ == "__main__":
-    print(f"{len(PARAMS_LIST)}の処理を並列実行します")
+    print(f"\n\n{len(PARAMS_LIST)}のパラメータの組み合わせを実行します\n常に{N_JOBS}個の処理を並列実行します")
     Parallel(n_jobs=N_JOBS, verbose=10)(
         delayed(run_single_experiment)(params) for params in PARAMS_LIST
     )

@@ -3,11 +3,11 @@
 import matplotlib.pyplot as plt
 from keras.models import load_model
 
-from simulation.setting import RNN_CFG, SAVE_CFG, FADING_CFG
+from simulation.configs.config import RNN_CFG, SAVE_CFG, FADING_CFG
 from simulation.simu_func import evaluate_model, save_predict_data
 
 # run_idの取得
-with open("./simulation/run_id.txt", "r") as f:
+with open("./simulation/scripts/run_id.txt", "r") as f:
     run_id = f.readline().strip()
 
 # run_idで作ったmodelを探す

@@ -6,9 +6,9 @@ import mlflow
 from pathlib import Path
 
 from simulation.simu_func import *
-from common.common_setting import *
+from simulation.configs.config import SAVE_CFG
 
-experiment_dir=Path(f"{BASE_DIR}/{EXPERIMENT_NAME}")
+experiment_dir=Path(f"{SAVE_CFG.}/{EXPERIMENT_NAME}")
 
 mlflow.set_experiment(EXPERIMENT_NAME)
 
