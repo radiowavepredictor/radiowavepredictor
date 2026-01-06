@@ -11,13 +11,13 @@ from keras.regularizers import l2
 from keras.utils import timeseries_dataset_from_array
 import time
 
+#def normalize(data): #???これz-scoreって名前変えたほうがいい
+#    return (data - data.mean(axis=0)) / data.std(axis=0)
+def normalize(data,mean,std):
+    return (data-mean)/std
 
-def normalize(data):
-    return (data - data.mean(axis=0)) / data.std(axis=0)
-
-
-def denormalize(normalized_data, base_data):
-    return normalized_data * base_data.std(axis=0) + base_data.mean(axis=0)
+def denormalize(normalized_data, mean,std):
+    return normalized_data * std + mean
 
 
 def dbm_to_mw(dbm):
@@ -98,29 +98,27 @@ def create_model(
     }
 
 
-def predict(model, data, input_len, plot_start, plot_range, verbose=1):
+def predict(model, power_db_data, input_len, plot_start, plot_range, mean,std,verbose=1):
 
-    power = np.abs(data) ** 2
-    power_db = 10 * np.log10(power)
-    normalized_data = normalize(power_db)
+    normalized_data = normalize(power_db_data,mean,std)
 
     x = timeseries_dataset_from_array(
         normalized_data,
         targets=None,
         sequence_length=input_len,
-        batch_size=1,
+        batch_size=32,
         shuffle=False,
     )
 
     predicted = model.predict(x, verbose=verbose)
-    true_data = power_db
-    denormalized_predicted = denormalize(predicted, true_data)
+    true_data = power_db_data
+    denormalized_predicted = denormalize(predicted, mean,std)
     # RMSEを出すために、true_dataと同じ形式にする
     reshape_denormalized_predicted = np.array(denormalized_predicted).reshape(
         len(denormalized_predicted)
     )
     rmse = np.sqrt(
-        np.mean((reshape_denormalized_predicted[:-1] - true_data[input_len:]) ** 2)
+        np.mean((reshape_denormalized_predicted - true_data[input_len:]) ** 2)
     )
 
     # plotするときに単位を秒にするための処理

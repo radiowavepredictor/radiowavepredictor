@@ -33,7 +33,7 @@ run_id=save_create_data(
 
 with open("./simulation/scripts/run_id.txt","w") as f:
     f.write(run_id)
-    print(f"実行{SAVE_CFG.use_mlflow if "id" else "名"}をrun_id.txtに書き込みました")
+    print(f"実行{SAVE_CFG.use_mlflow if "id" else "名"}をrun_id.txtに書き込みました") #???ここ多分おかしい
 print(f"実行時間:{result['training_time']:.2f}秒")
 print("##################################################")
 

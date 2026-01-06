@@ -100,6 +100,8 @@ def evaluate_model(
 ):
     # 中上ライスのデータを取得(kerasモデルに渡せるように加工されていない状態)
     fading_data = calc_nakagami_rice_fading(fading_cfg)
+    power = np.abs(fading_data) ** 2
+    power_db = 10 * np.log10(power)
 
     # predict関数の中でkerasモデルに渡せるように加工したり正規化などをしている
     # ???create_model関数には加工してからデータを渡すのに、predict関数には加工前のデータを渡してるの変じゃない?
@@ -112,9 +114,10 @@ def evaluate_model(
 
     for _ in range(predict_num - 1):  # ↑で一回実行してるのでその分減らす
         fading_data = calc_nakagami_rice_fading(fading_cfg)
-
+        power = np.abs(fading_data) ** 2
+        power_db = 10 * np.log10(power)
         result_i = predict(
-            model,fading_data,rnn_cfg.input_len,save_cfg.plot_start,save_cfg.plot_range,
+            model,power_db,rnn_cfg.input_len,save_cfg.plot_start,save_cfg.plot_range,
         )
         rmse_sum += result_i["rmse"]
 
