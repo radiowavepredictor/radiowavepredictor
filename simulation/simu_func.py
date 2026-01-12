@@ -2,12 +2,13 @@ import os
 from datetime import datetime
 import numpy as np
 import json
+from sklearn.preprocessing import StandardScaler
 from dataclasses import replace
 import tensorflow as tf
 from keras.utils import timeseries_dataset_from_array
 
-from simulation.configs.cfg_schema import SaveConfig, FadingConfig, RnnConfig
-from common.common_func import mw_to_dbm, normalize, predict
+from simulation.configs.simulation_schema import SaveConfig, FadingConfig, RnnConfig
+from common.common_func import mw_to_dbm, predict
 
 
 def calc_fading(fading_cfg: FadingConfig):
@@ -52,23 +53,31 @@ def calc_nakagami_rice_fading(fading_cfg: FadingConfig):
 
 
 ### シミュレーション用のデータセット(入力と答え)をdata_set_num分用意する関数
-def generate_fading_dataset_list(fading_cfg: FadingConfig, rnn_cfg: RnnConfig):
-    fading_data_list_list = []
+def generate_fading_dataset_list(
+    input_len, fading_cfg: FadingConfig, scaler: StandardScaler | None = None
+):
+    # fadingデータ作成
+    fading_data_arr = []
     for _ in range(fading_cfg.data_set_num):
-        fading_data_list_list.append(calc_nakagami_rice_fading(fading_cfg))
-    fading_data_list_list = np.array(fading_data_list_list)
+        fading_data_arr.append(calc_nakagami_rice_fading(fading_cfg))
+    fading_data_arr = np.array(fading_data_arr)
 
-    power = np.abs(fading_data_list_list) ** 2
+    power = np.abs(fading_data_arr) ** 2
     power_db = mw_to_dbm(power)
-    data_normalized = normalize(power_db)
+
+    # 標準化
+    if scaler is None:
+        scaler = StandardScaler()
+        scaler.fit(power_db.reshape(-1, 1))
+    data_norm_arr = scaler.transform( power_db.reshape(-1, 1) ).reshape(power_db.shape)
+
     dataset_arr = []
-    for i in range(fading_cfg.data_set_num):
-        targets = data_normalized[i][rnn_cfg.input_len :]
+    for data_norm in data_norm_arr:
         # datasetの中身はtensorflow特有のオブジェクトで入力と出力(入力に対する答え)のセットが入っている
         dataset_i = timeseries_dataset_from_array(
-            data=data_normalized[i],
-            targets=targets,
-            sequence_length=rnn_cfg.input_len,
+            data=data_norm,
+            targets=data_norm[input_len:],
+            sequence_length=input_len,
             batch_size=None,  # type:ignore[arg-type]
             shuffle=False,
         )
@@ -77,21 +86,21 @@ def generate_fading_dataset_list(fading_cfg: FadingConfig, rnn_cfg: RnnConfig):
     dataset = dataset_arr[0]
     for ds in dataset_arr[1:]:
         dataset = dataset.concatenate(ds)
-    return dataset
+    return dataset,scaler
 
 
 ### シミュレーションデータセットを訓練用、検証用と用意する関数
 def load_fading_data(fading_cfg: FadingConfig, rnn_cfg: RnnConfig):
-    train_dataset = generate_fading_dataset_list(fading_cfg, rnn_cfg)
+    train_dataset,scaler = generate_fading_dataset_list(rnn_cfg.input_len,fading_cfg )
     train_dataset = (
         train_dataset.shuffle(buffer_size=10000)
         .batch(rnn_cfg.batch_size)
         .prefetch(tf.data.AUTOTUNE)
     )
     val_fading_cfg = replace(fading_cfg, data_set_num=fading_cfg.data_set_num // 4)
-    val_dataset = generate_fading_dataset_list(val_fading_cfg, rnn_cfg)
+    val_dataset,scaler = generate_fading_dataset_list(rnn_cfg.input_len,val_fading_cfg, scaler)
     val_dataset = val_dataset.batch(rnn_cfg.batch_size).prefetch(tf.data.AUTOTUNE)
-    return train_dataset, val_dataset
+    return (train_dataset, val_dataset),scaler
 
 
 ### 複数のデータセットで予測を行いrmseの平均を算出する 1回目のデータセットだけ詳細な情報を返す
@@ -117,12 +126,16 @@ def evaluate_model(
         power = np.abs(fading_data) ** 2
         power_db = 10 * np.log10(power)
         result_i = predict(
-            model,power_db,rnn_cfg.input_len,save_cfg.plot_start,save_cfg.plot_range,
+            model,
+            power_db,
+            rnn_cfg.input_len,
+            save_cfg.plot_start,
+            save_cfg.plot_range,
         )
         rmse_sum += result_i["rmse"]
 
     rmse_mean = rmse_sum / predict_num
-    return first_result,rmse_mean
+    return first_result, rmse_mean
 
 
 ### モデル作成時のデータを保存する ###

@@ -7,9 +7,9 @@ from pathlib import Path
 
 @dataclass(frozen=True)
 class MeasureConfig:
-    train_corces:list[int]
-    val_corces:list[int]
-    predict_corce:int
+    train_cources:list[int]
+    val_cources:list[int]
+    predict_cource:int
     start_ratio:float
     end_ratio:float
     data_axis:Literal["time","distance"]

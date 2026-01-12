@@ -10,19 +10,16 @@ from keras.callbacks import EarlyStopping
 from keras.regularizers import l2
 from keras.utils import timeseries_dataset_from_array
 import time
+from sklearn.preprocessing import StandardScaler
+'''
+def z_score_normalize(data,base_data:np.ndarray):
+    return (data - base_data.mean()) / base_data.std()
 
-#def normalize(data): #???これz-scoreって名前変えたほうがいい
-#    return (data - data.mean(axis=0)) / data.std(axis=0)
-def normalize(data,mean,std):
-    return (data-mean)/std
-
-def denormalize(normalized_data, mean,std):
-    return normalized_data * std + mean
-
-
+def z_score_denormalize(normalized_data, base_data:np.ndarray):
+    return normalized_data * base_data.std() + base_data.mean()
+'''    
 def dbm_to_mw(dbm):
     return 10 ** (dbm / 10)
-
 
 def mw_to_dbm(mw):
     return 10 * np.log10(mw)
@@ -79,7 +76,7 @@ def create_model(
         dataset,
         epochs=epochs,
         validation_data=val_dataset,
-        callbacks=[EarlyStopping(monitor="val_loss", mode="auto", patience=10)],
+        callbacks=[EarlyStopping(monitor="val_loss", mode="auto", patience=20)],
         verbose=verbose,  # type:ignore[arg-type]
     )
 
@@ -98,12 +95,12 @@ def create_model(
     }
 
 
-def predict(model, power_db_data, input_len, plot_start, plot_range, mean,std,verbose=1):
+def predict(model, data,scaler:StandardScaler, input_len, plot_start, plot_range,verbose=1):
 
-    normalized_data = normalize(power_db_data,mean,std)
+    norm_data = scaler.transform(data)
 
     x = timeseries_dataset_from_array(
-        normalized_data,
+        norm_data,
         targets=None,
         sequence_length=input_len,
         batch_size=32,
@@ -111,14 +108,10 @@ def predict(model, power_db_data, input_len, plot_start, plot_range, mean,std,ve
     )
 
     predicted = model.predict(x, verbose=verbose)
-    true_data = power_db_data
-    denormalized_predicted = denormalize(predicted, mean,std)
-    # RMSEを出すために、true_dataと同じ形式にする
-    reshape_denormalized_predicted = np.array(denormalized_predicted).reshape(
-        len(denormalized_predicted)
-    )
+    denormalized_predicted = scaler.inverse_transform(predicted)
+
     rmse = np.sqrt(
-        np.mean((reshape_denormalized_predicted - true_data[input_len:]) ** 2)
+        np.mean((denormalized_predicted[:-1] - data[input_len:]) ** 2)
     )
 
     # plotするときに単位を秒にするための処理
@@ -137,7 +130,7 @@ def predict(model, power_db_data, input_len, plot_start, plot_range, mean,std,ve
     plt.ylabel("ReceivedPower[dBm]")
     plt.plot(
         x_true_data,
-        true_data[plot_start : plot_start + plot_range],
+        data[plot_start : plot_start + plot_range],
         color="r",
         alpha=0.5,
         label="true_data",
@@ -153,6 +146,23 @@ def predict(model, power_db_data, input_len, plot_start, plot_range, mean,std,ve
     return {
         "rmse": rmse,
         "predict_result_figure": predict_result_fig,
-        "true_data": true_data,
+        "true_data": data,
         "predict_data": denormalized_predicted,  # ???reshape_denormalized_predictedのほうがいいのかもしれない
     }
+    
+# dataからRNN用のデータセットを生成する関数
+# timeseries_dataset_from_array()と使い分ける
+# make_data_setはnumpy配列を返すので、後から加工しやすい
+# timeseries_dataset_from_arrayはtf.data.Datasetオブジェクトを返すので、prefetchなどtensorflow専用の関数が使える
+def make_dataset(changed_data, input_len):
+    data, target = [], []
+
+    for i in range(len(changed_data) - input_len):
+        data.append(changed_data[i : i + input_len])
+        target.append(changed_data[i + input_len])
+
+    # RNN用に3次元のデータに変更する
+    re_data = np.array(data).reshape(len(data), input_len, 1)
+    re_target = np.array(target).reshape(len(data), 1)
+
+    return (re_data, re_target)

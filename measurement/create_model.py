@@ -2,13 +2,13 @@ import matplotlib.pyplot as plt
 import time 
 
 from measurement.configs.measure_cfg import MEASURE_CFG,RNN_CFG,SAVE_CFG
-from measurement.measure_func import load_training_data,save_create_data
+from measurement.measure_func import load_learning_dataset,save_create_data
 from common.common_func import create_model
 
 #コード実行時間計測
 start_time=time.time()
 
-train_dataset,val_dataset,mean,std=load_training_data(MEASURE_CFG,RNN_CFG)
+(train_dataset,val_dataset),scaler=load_learning_dataset(MEASURE_CFG,RNN_CFG)
 
 end_time=time.time()
 print(f"実行時間:{(end_time-start_time):2f}秒")
@@ -31,6 +31,7 @@ print("################モデル作成の実行結果################")
 
 run_id=save_create_data(
     result['model'],
+    scaler,
     result['history_figure'],
     result['training_time'],
     MEASURE_CFG,
@@ -41,10 +42,6 @@ run_id=save_create_data(
 with open("./measurement/scripts/run_id.txt","w") as f:
     f.write(run_id)
     print(f"実行{"id" if SAVE_CFG.use_mlflow else "名"}をrun_id.txtに書き込みました")
-with open("./measurement/scripts/mean.txt","w") as f:
-    f.write(str(mean))
-with open("./measurement/scripts/std.txt","w") as f:
-    f.write(str(std))
 
 print(f"実行時間:{result['training_time']:.2f}秒")
 print("##################################################")

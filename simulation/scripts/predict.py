@@ -3,7 +3,7 @@
 import matplotlib.pyplot as plt
 from keras.models import load_model
 
-from simulation.configs.config import RNN_CFG, SAVE_CFG, FADING_CFG
+from simulation.configs.simulation_cfg import RNN_CFG, SAVE_CFG, FADING_CFG
 from simulation.simu_func import evaluate_model, save_predict_data
 
 # run_idの取得

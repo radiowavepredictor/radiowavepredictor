@@ -1,24 +1,11 @@
 # ===== このファイルでyamlをpython用に変換する =====
 from ruamel.yaml import YAML
-from keras.layers import SimpleRNN,LSTM,GRU
-from keras.optimizers import Adam,AdamW,RMSprop
 
-from simulation.configs.cfg_schema import FadingConfig,RnnConfig,SaveConfig
-
-RNN_CLASS_MAP = {
-    "SimpleRNN": SimpleRNN,
-    "GRU": GRU,
-    "LSTM": LSTM,
-}
-
-OPTIMIZER_MAP = {
-    "Adam": Adam,
-    "AdamW": AdamW,
-    "RMSprop": RMSprop,
-}
+from common.registory import RNN_CLASS_MAP,OPTIMIZER_MAP
+from simulation.configs.simulation_schema import FadingConfig,RnnConfig,SaveConfig
 
 yaml=YAML(typ="safe")
-with open("simulation/configs/config.yaml", encoding="utf-8") as f:
+with open("simulation/configs/simulation.yaml", encoding="utf-8") as f:
     cfg = yaml.load(f)
     
 rnn_class = RNN_CLASS_MAP[cfg["model"]["rnn_type"]]

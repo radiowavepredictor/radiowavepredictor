@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from simulation.simu_func import *
-from simulation.configs.config import FADING_CFG
+from simulation.configs.simulation_cfg import FADING_CFG
 
 fading=calc_fading(FADING_CFG)
 
