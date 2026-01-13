@@ -3,12 +3,12 @@ import os
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 import joblib
-from dataclasses import asdict, is_dataclass
 import json
 from datetime import datetime
 import tensorflow as tf
 from keras.utils import timeseries_dataset_from_array
 
+from common.common_func import cfg_to_flat_dict
 from measurement.configs.measure_schema import MeasureConfig, RnnConfig, SaveConfig
 
 def read_csv(read_cource, measure_cfg: MeasureConfig):
@@ -85,22 +85,6 @@ def load_learning_dataset(measure_cfg: MeasureConfig, rnn_cfg: RnnConfig):
     val_dataset = val_dataset.batch(rnn_cfg.batch_size).prefetch(tf.data.AUTOTUNE)
 
     return (train_dataset, val_dataset), scaler
-
-# config構造体を辞書型に変換して返す
-def cfg_to_flat_dict(cfg):
-    if not is_dataclass(cfg):
-        raise TypeError("cfg must be a dataclass")
-
-    result = {}
-    for k, v in asdict(cfg).items():  # type:ignore[arg-type]
-        if isinstance(v, type):
-            result[k] = v.__name__
-        elif hasattr(v, "__name__"):
-            result[k] = v.__name__
-        else:
-            result[k] = v
-    return result
-
 
 def save_create_data(
     model,

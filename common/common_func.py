@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+from dataclasses import asdict, is_dataclass
 
 path = os.path.dirname(__file__)
 from keras import Input
@@ -95,8 +96,17 @@ def create_model(
     }
 
 
-def predict(model, data,scaler:StandardScaler, input_len, plot_start, plot_range,verbose=1):
-
+def predict(model, data:np.ndarray,scaler:StandardScaler, input_len, plot_start, plot_range,verbose=1):
+    """
+    Parameters
+    ----------
+    data : np.ndarray
+        (データ,入力特徴量の数)の2次元行列を期待しています
+        特徴量が一つの場合はreshape(-1,1)してください
+    
+    Returns
+    ----------
+    """
     norm_data = scaler.transform(data)
 
     x = timeseries_dataset_from_array(
@@ -110,6 +120,8 @@ def predict(model, data,scaler:StandardScaler, input_len, plot_start, plot_range
     predicted = model.predict(x, verbose=verbose)
     denormalized_predicted = scaler.inverse_transform(predicted)
 
+    print(denormalized_predicted.shape)
+    print(data.shape)
     rmse = np.sqrt(
         np.mean((denormalized_predicted[:-1] - data[input_len:]) ** 2)
     )
@@ -166,3 +178,19 @@ def make_dataset(changed_data, input_len):
     re_target = np.array(target).reshape(len(data), 1)
 
     return (re_data, re_target)
+    
+# config構造体を辞書型に変換して返す
+def cfg_to_flat_dict(cfg):
+    if not is_dataclass(cfg):
+        raise TypeError("cfg must be a dataclass")
+
+    result = {}
+    for k, v in asdict(cfg).items():  # type:ignore[arg-type]
+        if isinstance(v, type):
+            result[k] = v.__name__
+        elif hasattr(v, "__name__"):
+            result[k] = v.__name__
+        else:
+            result[k] = v
+    return result
+

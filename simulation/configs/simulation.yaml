@@ -6,18 +6,18 @@ fading:
   c: 3e8  # 光速 [m/s]
   f: 1.298e9  # キャリア周波数 [Hz]
   r: 1  # 反射波の振幅
-  k_rice: 40 
+  k_rice: 8 
 
 model:
   rnn_type: SimpleRNN 
-  optimizer: Adam 
+  optimizer: AdamW
   in_features: 1 #入力特徴量の数(入力するデータが何種類あるか)
   input_len: 50
-  hidden_nums: [16,8]
+  hidden_nums: [48,48]
   out_steps_num: 1 #何点予測するか
   batch_size: 256
   epochs: 100
-  learning_rate: 0.0003
+  learning_rate: 0.0005
 
 save:
   predicted_dataset_num: 3 # RMSEを出すときにいくつのデータセットを予測して平均値を出すか

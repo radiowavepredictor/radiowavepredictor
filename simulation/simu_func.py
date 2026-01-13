@@ -3,12 +3,13 @@ from datetime import datetime
 import numpy as np
 import json
 from sklearn.preprocessing import StandardScaler
+import joblib
 from dataclasses import replace
 import tensorflow as tf
 from keras.utils import timeseries_dataset_from_array
 
 from simulation.configs.simulation_schema import SaveConfig, FadingConfig, RnnConfig
-from common.common_func import mw_to_dbm, predict
+from common.common_func import mw_to_dbm, predict,cfg_to_flat_dict
 
 
 def calc_fading(fading_cfg: FadingConfig):
@@ -105,17 +106,18 @@ def load_fading_data(fading_cfg: FadingConfig, rnn_cfg: RnnConfig):
 
 ### 複数のデータセットで予測を行いrmseの平均を算出する 1回目のデータセットだけ詳細な情報を返す
 def evaluate_model(
-    model, fading_cfg: FadingConfig, rnn_cfg: RnnConfig, save_cfg: SaveConfig
+    model ,scaler:StandardScaler,fading_cfg: FadingConfig, rnn_cfg: RnnConfig, save_cfg: SaveConfig
 ):
     # 中上ライスのデータを取得(kerasモデルに渡せるように加工されていない状態)
     fading_data = calc_nakagami_rice_fading(fading_cfg)
     power = np.abs(fading_data) ** 2
     power_db = 10 * np.log10(power)
+    power_db=power_db.reshape(-1,1)
 
     # predict関数の中でkerasモデルに渡せるように加工したり正規化などをしている
     # ???create_model関数には加工してからデータを渡すのに、predict関数には加工前のデータを渡してるの変じゃない?
     first_result = predict(
-        model, fading_data, rnn_cfg.input_len, save_cfg.plot_start, save_cfg.plot_range
+        model, power_db,scaler, rnn_cfg.input_len, save_cfg.plot_start, save_cfg.plot_range
     )
 
     rmse_sum = first_result["rmse"]
@@ -125,9 +127,11 @@ def evaluate_model(
         fading_data = calc_nakagami_rice_fading(fading_cfg)
         power = np.abs(fading_data) ** 2
         power_db = 10 * np.log10(power)
+        power_db=power_db.reshape(-1,1)
         result_i = predict(
             model,
             power_db,
+            scaler,
             rnn_cfg.input_len,
             save_cfg.plot_start,
             save_cfg.plot_range,
@@ -141,42 +145,39 @@ def evaluate_model(
 ### モデル作成時のデータを保存する ###
 def save_create_data(
     model,
+    scaler:StandardScaler,
     history_figure,
     training_time,
     save_cfg: SaveConfig,
     fading_cfg: FadingConfig,
     rnn_cfg: RnnConfig,
 ):
-
+    fading_params = cfg_to_flat_dict(fading_cfg)
+    rnn_params = cfg_to_flat_dict(rnn_cfg)
     if save_cfg.use_mlflow:
         print("mlflowに保存します")
         import mlflow
 
-        print("******mlflowのログ******")
         mlflow.set_experiment(save_cfg.experiment_name)
-        with mlflow.start_run(run_name=save_cfg.run_name) as run:
-            mlflow.log_param("L", fading_cfg.l)
-            mlflow.log_param("Delta_D", fading_cfg.delta_d)
-            mlflow.log_param("Data_Num", fading_cfg.data_num)
-            mlflow.log_param("Data_Set_Num", fading_cfg.data_set_num)
-            mlflow.log_param("K_Rice", fading_cfg.k_rice)
 
-            mlflow.log_param("Input", rnn_cfg.input_len)
-            mlflow.log_param("Layers", len(rnn_cfg.hidden_nums))
-            mlflow.log_param("Units", rnn_cfg.hidden_nums)
-            mlflow.log_param("Batch", rnn_cfg.batch_size)
-            mlflow.log_param("Learning_Rate", rnn_cfg.learning_rate)
-            mlflow.log_param("RNN_Name", rnn_cfg.rnn_class.__name__)
-            mlflow.log_param("Optimizer", rnn_cfg.optimizer_class.__name__)
-            mlflow.log_param("Epochs", rnn_cfg.epochs)
+        with mlflow.start_run(run_name=save_cfg.run_name) as run:
+            # fading_cfg を全部保存
+            for k, v in fading_params.items():
+                mlflow.log_param(k, v)
+
+            # rnn_cfg を全部保存
+            for k, v in rnn_params.items():
+                mlflow.log_param(k, v)
 
             mlflow.log_figure(history_figure, "loss_curve.png")
-            mlflow.log_metric("Training_Time", training_time)
+            mlflow.log_metric("training_time", training_time)
             artifact_dir = mlflow.get_artifact_uri()
+            artifact_path = artifact_dir.replace("file:", "")
+            
+            joblib.dump(scaler, os.path.join(artifact_path, "scaler.pkl"))
             model_path = os.path.join(artifact_dir.replace("file:", ""), "model.keras")
             model.save(model_path)
             run_id = run.info.run_id
-        print("************************")
         print("実験名(experiment_name):", save_cfg.experiment_name)
         print("実験id:", run.info.experiment_id)
         print("実行名(run_name):", save_cfg.run_name)
@@ -190,26 +191,18 @@ def save_create_data(
             "run_name": save_cfg.run_name,
             "datetime": datetime.now().isoformat(),
             "params": {
-                "L": fading_cfg.l,
-                "Delta_D": fading_cfg.delta_d,
-                "Data_Num": fading_cfg.data_num,
-                "Data_Set_Num": fading_cfg.data_set_num,
-                "K_Rice": fading_cfg.k_rice,
-                "Input": rnn_cfg.input_len,
-                "Layers": len(rnn_cfg.hidden_nums),
-                "Units": rnn_cfg.hidden_nums,
-                "Batch": rnn_cfg.batch_size,
-                "Learning_Rate": rnn_cfg.learning_rate,
-                "RNN_Name": rnn_cfg.rnn_class.__name__,
-                "Optimizer": rnn_cfg.optimizer_class.__name__,
-                "Epochs": rnn_cfg.epochs,
+                **fading_params,
+                **rnn_params,
             },
-            "metrics": {"Training_Time": training_time},
+            "metrics": {
+                "training_time": training_time,
+            },
         }
         save_dir = save_cfg.save_dir
         with open(os.path.join(save_dir, "data.json"), "w") as f:
             json.dump(data, f, indent=2)
         history_figure.savefig(os.path.join(save_dir, "loss_curve.png"))
+        joblib.dump(scaler, os.path.join(save_dir, "scaler.pkl"))
         model.save(os.path.join(save_dir, "model.keras"))
         print("experiment_name:", save_cfg.experiment_name)
         print("run_name:", save_cfg.run_name)
@@ -238,8 +231,8 @@ def save_predict_data(
             pred_path = os.path.join(artifact_path, "predicted.npy")
             np.save(true_path, true_data)
             np.save(pred_path, predict_data)
-            mlflow.log_metric("RMSE", rmse)
-            mlflow.log_metric("RMSE_MEAN", rmse_mean)
+            mlflow.log_metric("rmse", rmse)
+            mlflow.log_metric("rmse_mean", rmse_mean)
             mlflow.log_figure(predict_result_fig, "predict_results.png")
         print("実験名(experiment_name):", save_cfg.experiment_name)
         print("実行id(run_id):", run_id)
@@ -249,8 +242,8 @@ def save_predict_data(
         print("jsonで保存します")
         with open(f"{save_dir}/data.json", "r") as f:
             data = json.load(f)
-        data["metrics"]["RMSE"] = rmse
-        data["metrics"]["RMSE_MEAN"] = rmse_mean
+        data["metrics"]["rmse"] = rmse
+        data["metrics"]["rmse_mean"] = rmse_mean
 
         with open(f"{save_dir}/data.json", "w") as f:
             json.dump(data, f, indent=2)

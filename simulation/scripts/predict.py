@@ -2,6 +2,7 @@
 ### mlrunsフォルダから探すときはUSE_MLFLOWをTrue,exp_runsフォルダから探すときはUSE_MLFLOWをFalseにする ###
 import matplotlib.pyplot as plt
 from keras.models import load_model
+import joblib
 
 from simulation.configs.simulation_cfg import RNN_CFG, SAVE_CFG, FADING_CFG
 from simulation.simu_func import evaluate_model, save_predict_data
@@ -16,17 +17,20 @@ if SAVE_CFG.use_mlflow:
 
     client = MlflowClient()
     model_path = client.download_artifacts(run_id, "model.keras")
+    scaler_path = client.download_artifacts(run_id,"scaler.pkl")
 else:
     model_path = f"./{SAVE_CFG.save_dir}/model.keras"
+    scaler_path =f"./{SAVE_CFG.save_dir}/scaler.pkl"
 
 model = load_model(model_path)
+scaler = joblib.load(scaler_path)
 
 
 print("\n\n")
 print("########予測の実行結果########")
 
 # 中で複数回predictしてる
-first_result,rmse_mean=evaluate_model(model,FADING_CFG,RNN_CFG,SAVE_CFG)
+first_result,rmse_mean=evaluate_model(model,scaler,FADING_CFG,RNN_CFG,SAVE_CFG)
 
 save_predict_data(
     run_id,

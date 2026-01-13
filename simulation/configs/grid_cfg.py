@@ -7,17 +7,17 @@ N_JOBS=2 # いくつ並列処理させるか
 GRID_PARAMS = {
     # --- Data params ---
     "DELTA_D": [0.005],
-    "DATA_NUM": [3000],
-    "DATA_SET_NUM": [15],
-    "K_RICE": [0,4,8],
+    "DATA_NUM": [1000],
+    "DATA_SET_NUM": [10],
+    "K_RICE": [4],
     # --- Model params ---
     "RNN_TYPE": [SimpleRNN],
     "OPTIMIZER": [Adam,AdamW],
     "INPUT_LEN": [25,50],
-    "HIDDEN_NUMS": [[16, 8],[20],[24,16],[32,32],[48,48]],
+    "HIDDEN_NUMS": [[16]],
     "OUT_STEPS_NUM": [1],
     "BATCH_SIZE": [256],
-    "LEARNING_RATE": [0.0003,0.0002,0.0005],
+    "LEARNING_RATE": [0.0005],
 }
 # ===== 直積処理 =====
 keys = list(GRID_PARAMS.keys())

@@ -29,7 +29,7 @@ def run_single_experiment(params):
         learning_rate=params["LEARNING_RATE"],
     )
 
-    dataset, val_dataset = load_fading_data(fading_cfg, rnn_cfg)
+    (dataset, val_dataset), scaler= load_fading_data(fading_cfg, rnn_cfg)
 
     create_result = create_model(
         dataset,
@@ -47,6 +47,7 @@ def run_single_experiment(params):
 
     run_id = save_create_data(
         create_result["model"],
+        scaler,
         create_result["history_figure"],
         create_result["training_time"],
         SAVE_CFG,
@@ -56,7 +57,7 @@ def run_single_experiment(params):
 
     model = create_result["model"]
     
-    first_result,rmse_mean=evaluate_model(model,fading_cfg,rnn_cfg,SAVE_CFG)
+    first_result,rmse_mean=evaluate_model(model,scaler,fading_cfg,rnn_cfg,SAVE_CFG)
     
     save_predict_data(
         run_id,
