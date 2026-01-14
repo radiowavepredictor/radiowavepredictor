@@ -4,9 +4,8 @@ import matplotlib.pyplot as plt
 import joblib
 from keras.models import load_model
 
-from common.common_func import predict
-from measurement.measure_func import save_predict_data
-from measurement.configs.measure_cfg import RNN_CFG,SAVE_CFG,MEASURE_CFG
+from common.function import predict,save_predict_data
+from measurement.configs.config import RNN_CFG,SAVE_CFG,MEASURE_CFG
 
 # run_idの取得
 with open("./measurement/scripts/run_id.txt", "r") as f:
@@ -48,6 +47,7 @@ save_predict_data(
     result["true_data"],
     result["predict_data"],
     result["rmse"],
+    0,
     result["predict_result_figure"],
     SAVE_CFG
 )

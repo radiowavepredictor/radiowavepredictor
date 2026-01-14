@@ -9,7 +9,7 @@ import tensorflow as tf
 from keras.utils import timeseries_dataset_from_array
 
 from simulation.configs.simulation_schema import SaveConfig, FadingConfig, RnnConfig
-from common.common_func import mw_to_dbm, predict,cfg_to_flat_dict
+from common.function import mw_to_dbm, predict,cfg_to_flat_dict
 
 
 def calc_fading(fading_cfg: FadingConfig):

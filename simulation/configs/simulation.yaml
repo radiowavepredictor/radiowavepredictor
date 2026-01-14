@@ -26,7 +26,7 @@ save:
   plot_range: 200 #グラフとして表示する範囲
 
   use_mlflow: true #mlflowを使うかどうか(mlflowが使えない環境ではFalseを指定)
-  experiment_name: test
+  experiment_name: simu-set-17-num-4000
 
   base_dir: exp_runs #mlflowを使わないときの保存フォルダ名
 

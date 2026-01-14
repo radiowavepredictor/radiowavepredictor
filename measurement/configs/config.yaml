@@ -1,5 +1,5 @@
 measure:
-  train_cources: [1,2,4,5,6,7,8,10,11,12,13,14,15,16]
+  train_cources: [1,2,4]
   val_cources: [3,17]
   predict_cource: 9 #予測したいコース番号
   start_ratio: 0 
@@ -8,7 +8,7 @@ measure:
   
 model:
   rnn_type: SimpleRNN 
-  optimizer: Adam 
+  optimizer_type: Adam 
   in_features: 1 #入力特徴量の数(入力するデータが何種類あるか)
   input_len: 100
   hidden_nums: [20]
@@ -16,6 +16,7 @@ model:
   batch_size: 128
   epochs: 100
   learning_rate: 0.001
+  patience: 5
 
 save:
   recursive_num: 500 #再帰予測で予測する回数(現状使ってない)
@@ -23,7 +24,7 @@ save:
   plot_range: 200 #グラフとして表示する範囲
 
   use_mlflow: true #mlflowを使うかどうか(mlflowが使えない環境ではFalseを指定)
-  experiment_name: measure
+  experiment_name: test
 
   base_dir: exp_runs #mlflowを使わないときの保存フォルダ名
 

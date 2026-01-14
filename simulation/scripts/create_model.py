@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 
 from simulation.simu_func import load_fading_data,save_create_data
 from simulation.configs.simulation_cfg import FADING_CFG,RNN_CFG,SAVE_CFG
-from common.common_func import create_model
+from common.function import create_model
 
 (dataset,val_dataset),scaler=load_fading_data(FADING_CFG,RNN_CFG)
 

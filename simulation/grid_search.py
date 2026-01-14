@@ -5,7 +5,7 @@ from simulation.simu_func import *
 from simulation.configs.simulation_schema import FadingConfig, RnnConfig, SaveConfig
 from simulation.configs.simulation_cfg import FADING_CFG, RNN_CFG, SAVE_CFG
 from simulation.configs.grid_cfg import PARAMS_LIST,N_JOBS
-from common.common_func import create_model
+from common.function import create_model
 
 def run_single_experiment(params):
     # パラメータ変数を用意する

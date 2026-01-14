@@ -1,9 +1,16 @@
+from ruamel.yaml import YAML
 from keras.layers import SimpleRNN,LSTM,GRU
 from keras.optimizers import Adam,AdamW
 from itertools import product
 
-N_JOBS=2 # いくつ並列処理させるか
+yaml=YAML(typ="safe")
+with open("measurement/configs/grid_cfg.yaml", encoding="utf-8") as f:
+    cfg = yaml.load(f)
 
+N_JOBS=cfg['n_jobs'] 
+GRID_PARAMS=cfg['params']
+
+'''
 GRID_PARAMS = {
     "COURCE":[
         {
@@ -23,6 +30,7 @@ GRID_PARAMS = {
     "BATCH_SIZE": [128],
     "LEARNING_RATE": [0.0003,0.0002,0.0005,0.001],
 }
+'''
 # ===== 直積処理 =====
 keys = list(GRID_PARAMS.keys())
 values = list(GRID_PARAMS.values())

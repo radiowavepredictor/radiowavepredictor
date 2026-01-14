@@ -1,11 +1,12 @@
 from dataclasses import replace
 from joblib import Parallel, delayed
 
-from common.common_func import create_model,predict
-from measurement.measure_func import *
-from measurement.configs.measure_cfg import RNN_CFG,SAVE_CFG,MEASURE_CFG
-from measurement.configs.measure_schema import SaveConfig,RnnConfig,MeasureConfig
-from measurement.configs.grid_chg import PARAMS_LIST,N_JOBS
+from common.schema import RnnConfig
+from common.function import create_model,predict,save_create_data,save_predict_data
+from measurement.function import *
+from measurement.configs.config import RNN_CFG,SAVE_CFG,MEASURE_CFG
+from measurement.configs.schema import MeasureConfig
+from measurement.configs.grid_cfg import PARAMS_LIST,N_JOBS
 
 def run_single_experiment(param):
     # パラメータ変数を用意する
@@ -34,14 +35,7 @@ def run_single_experiment(param):
     create_result = create_model(
         dataset,
         val_dataset,
-        rnn_cfg.input_len,
-        rnn_cfg.in_features,
-        rnn_cfg.hidden_nums,
-        rnn_cfg.rnn_class,
-        rnn_cfg.optimizer_class,
-        rnn_cfg.out_steps_num,
-        rnn_cfg.learning_rate,
-        rnn_cfg.epochs,
+        rnn_cfg,
         verbose=0,
     )
 
@@ -74,6 +68,7 @@ def run_single_experiment(param):
         run_id,
         result["true_data"],
         result["predict_data"],
+        result["rmse"],
         result["rmse"],
         result["predict_result_figure"],
         SAVE_CFG,
