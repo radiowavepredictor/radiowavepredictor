@@ -175,7 +175,7 @@ def make_dataset(changed_data, input_len):
 
     return (re_data, re_target)
     
-# 構造体を辞書型に変換して返す Enumがあった場合は文字列に変換する
+# 構造体を辞書型に変換してflatにして返す Enumがあった場合は文字列に変換する
 def struct_to_flat_dict(obj)->dict:
     if isinstance(obj,dict):
         return obj
@@ -186,13 +186,16 @@ def struct_to_flat_dict(obj)->dict:
     else:
         raise TypeError("dataclassまたはBaseModel以外の値が入っています")
 
-    result = {}
-    for k, v in dict_.items():  
-        result[k] = v
-    return result
+    result={}
+    def walk_(d):
+        for k, v in d.items():
+            if isinstance(v, dict):
+                walk_(v)
+            else:
+                result[k] = v
 
-from enum import Enum
-import numpy as np
+    walk_(dict_)
+    return result
 
 def to_yaml_safe(value:dict)->dict:
     """
@@ -301,7 +304,7 @@ def save_create_data(
     model.save(os.path.join(save_path, "model.keras"))
     
     return run_id
-
+    
 def save_predict_data(
     run_id,
     first_true_data,
