@@ -4,8 +4,8 @@ import matplotlib.pyplot as plt
 from keras.models import load_model
 import joblib
 
-from simulation.configs.simulation_cfg import RNN_CFG, SAVE_CFG, FADING_CFG
-from simulation.simu_func import evaluate_model, save_predict_data
+from simulation.configs.config import RNN_CFG, SAVE_CFG, SIMULATION_CFG
+from simulation.function import evaluate_model, wrap_save_predict_data
 
 # run_idの取得
 with open("./simulation/scripts/run_id.txt", "r") as f:
@@ -30,15 +30,15 @@ print("\n\n")
 print("########予測の実行結果########")
 
 # 中で複数回predictしてる
-first_result,rmse_mean=evaluate_model(model,scaler,FADING_CFG,RNN_CFG,SAVE_CFG)
+first_result,rmse_mean=evaluate_model(model,scaler,SIMULATION_CFG,RNN_CFG,SAVE_CFG)
 
-save_predict_data(
+wrap_save_predict_data(
     run_id,
     first_result["true_data"],
     first_result["predict_data"],
     first_result["rmse"],
-    first_result["predict_result_figure"],
     rmse_mean,
+    first_result["predict_result_figure"],
     SAVE_CFG,
 )
 

@@ -1,29 +1,40 @@
-from keras.layers import SimpleRNN,LSTM,GRU
-from keras.optimizers import Adam,AdamW
+from ruamel.yaml import YAML
 from itertools import product
 
-N_JOBS=2 # いくつ並列処理させるか
+from itertools import product
 
-GRID_PARAMS = {
-    # --- Data params ---
-    "DELTA_D": [0.005],
-    "DATA_NUM": [4000],
-    "DATA_SET_NUM": [17],
-    "K_RICE": [4],
-    # --- Model params ---
-    "RNN_TYPE": [SimpleRNN],
-    "OPTIMIZER": [Adam],
-    "INPUT_LEN": [10,50],
-    "HIDDEN_NUMS": [[20],[16,8]],
-    "OUT_STEPS_NUM": [1],
-    "BATCH_SIZE": [256],
-    "LEARNING_RATE": [0.0005],
-}
-# ===== 直積処理 =====
-keys = list(GRID_PARAMS.keys())
-values = list(GRID_PARAMS.values())
+from common.function import build_section_grid
+from common.schema import RnnConfig,SaveConfig
+from simulation.configs.schema import SimulationConfig
 
-PARAMS_LIST = [dict(zip(keys, combo)) for combo in product(*values)] 
+yaml=YAML(typ="safe")
+with open("simulation/configs/grid_cfg.yaml", encoding="utf-8") as f:
+    cfg = yaml.load(f)
+
+N_JOBS=cfg['n_jobs'] 
+
+grid_params=cfg['params']
+
+# simulation,model,saveそれぞれで直積
+simulation_grid = build_section_grid(grid_params["simulation"])
+model_grid   = build_section_grid(grid_params["model"])
+save_grid    = build_section_grid(grid_params["save"])
+
+# BaseModelに変換
+simulation_grid = [SimulationConfig(**dict(s)) for s in simulation_grid]
+model_grid   = [RnnConfig(**dict(m)) for m in model_grid]
+save_grid    = [SaveConfig(**dict(s)) for s in save_grid]
+
+# 直積された3つでさらに直積
+PARAMS_LIST = [
+    {
+        "simulation": simu,
+        "model": model,
+        "save": save,
+    }
+    for simu, model, save in product(simulation_grid, model_grid, save_grid)
+]
 
 print(f"全組み合わせ数: {len(PARAMS_LIST)}")
 print(PARAMS_LIST[0])
+

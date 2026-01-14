@@ -3,10 +3,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from simulation.simu_func import *
-from simulation.configs.simulation_cfg import FADING_CFG
+from simulation.function import *
+from simulation.configs.config import SIMULATION_CFG
 
-fading=calc_fading(FADING_CFG)
+fading=calc_fading(SIMULATION_CFG)
 
 power = np.abs(fading)**2
 
@@ -16,7 +16,7 @@ power_db = 10 * np.log10(power)
 plt.figure(figsize=(10, 4))
 plt.xlim(0,5)
 plt.ylim(-30,10)
-x = np.arange(FADING_CFG.data_num) * FADING_CFG.delta_d
+x = np.arange(SIMULATION_CFG.data_num) * SIMULATION_CFG.delta_d
 plt.plot(x, power_db, label="Rayleigh fading power")
 plt.xlabel("Distance moved [m]")
 plt.ylabel("Relative Signal Power [dB]")

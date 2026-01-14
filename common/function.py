@@ -8,6 +8,8 @@ from ruamel.yaml import YAML
 from sklearn.preprocessing import StandardScaler
 import joblib
 from datetime import datetime
+from itertools import product
+from copy import deepcopy
 
 
 from keras import Input
@@ -307,10 +309,9 @@ def save_create_data(
     
 def save_predict_data(
     run_id,
-    first_true_data,
-    first_predict_data,
-    first_rmse,
-    rmse_mean,
+    true_data,
+    predict_data,
+    rmse,
     predict_result_fig,
     save_cfg: SaveConfig,
 ):
@@ -322,8 +323,7 @@ def save_predict_data(
             artifact_dir = mlflow.get_artifact_uri()
             save_path = artifact_dir.replace("file:", "")
 
-            mlflow.log_metric("rmse_first", first_rmse)
-            mlflow.log_metric("rmse_mean", rmse_mean)
+            mlflow.log_metric("rmse", rmse)
             mlflow.log_figure(predict_result_fig, "predict_results.png")
 
     else:
@@ -335,12 +335,38 @@ def save_predict_data(
     with open(os.path.join(save_path, "data.yaml"), "r") as f:
         data=yaml.load(f)
         
-    data["metrics"]["rmse_first"] = first_rmse
-    data["metrics"]["rmse_mean"] = rmse_mean
+    data["metrics"]["rmse"] = rmse
     data=to_yaml_safe(data)
     
     with open(os.path.join(save_path, "data.yaml"), "w") as f:
         yaml.dump(data, f)
     
-    np.save(os.path.join(save_path, "true.npy"), first_true_data)
-    np.save(os.path.join(save_path, "predicted.npy"), first_predict_data)
+    np.save(os.path.join(save_path, "true.npy"), true_data)
+    np.save(os.path.join(save_path, "predicted.npy"), predict_data)
+    
+# 辞書型からを最初の(1段目の?)階層で直積する
+def build_section_grid(section: dict):
+    fixed = {}
+    grid_keys = []
+    grid_values = []
+
+    for k, v in section.items():
+        if isinstance(v, list):
+            grid_keys.append(k)
+            grid_values.append(v)
+        else:
+            fixed[k] = v
+
+    # グリッドがない場合も product が回るように
+    if not grid_keys:
+        return [fixed]
+
+    results = []
+    for values in product(*grid_values):
+        d = deepcopy(fixed)
+        for k, v in zip(grid_keys, values):
+            d[k] = v
+        results.append(d)
+
+    return results
+

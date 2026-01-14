@@ -52,7 +52,6 @@ def run_single_experiment(param):
         result["true_data"],
         result["predict_data"],
         result["rmse"],
-        result["rmse"],
         result["predict_result_figure"],
         save_cfg,
     )

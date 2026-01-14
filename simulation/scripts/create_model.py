@@ -1,22 +1,15 @@
 import matplotlib.pyplot as plt
 
-from simulation.simu_func import load_fading_data,save_create_data
-from simulation.configs.simulation_cfg import FADING_CFG,RNN_CFG,SAVE_CFG
-from common.function import create_model
+from common.function import create_model,save_create_data
+from simulation.function import load_fading_dataset
+from simulation.configs.config import SIMULATION_CFG,RNN_CFG,SAVE_CFG
 
-(dataset,val_dataset),scaler=load_fading_data(FADING_CFG,RNN_CFG)
+(dataset,val_dataset),scaler=load_fading_dataset(SIMULATION_CFG,RNN_CFG)
 
 result=create_model(
     dataset,
     val_dataset,
-    RNN_CFG.input_len,
-    RNN_CFG.in_features,
-    RNN_CFG.hidden_nums,
-    RNN_CFG.rnn_class,
-    RNN_CFG.optimizer_class,
-    RNN_CFG.out_steps_num,
-    RNN_CFG.learning_rate,
-    RNN_CFG.epochs
+    RNN_CFG
 )
 
 print("\n\n")
@@ -27,9 +20,9 @@ run_id=save_create_data(
     scaler,
     result['history_figure'],
     result['training_time'],
-    SAVE_CFG,
-    FADING_CFG,
-    RNN_CFG
+    SIMULATION_CFG,
+    RNN_CFG,
+    SAVE_CFG
 )
 
 with open("./simulation/scripts/run_id.txt","w") as f:

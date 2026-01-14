@@ -1,39 +1,10 @@
 from ruamel.yaml import YAML
 from itertools import product
 
-from itertools import product
-from copy import deepcopy
-
 from common.schema import RnnConfig,SaveConfig
+from common.function import build_section_grid
 from measurement.configs.schema import MeasureConfig
 # ???もっと汎用的なコードにしたほうがいい
-
-# 辞書型からを最初の(1段目の?)階層で直積する
-def build_section_grid(section: dict):
-    fixed = {}
-    grid_keys = []
-    grid_values = []
-
-    for k, v in section.items():
-        if isinstance(v, list):
-            grid_keys.append(k)
-            grid_values.append(v)
-        else:
-            fixed[k] = v
-
-    # グリッドがない場合も product が回るように
-    if not grid_keys:
-        return [fixed]
-
-    results = []
-    for values in product(*grid_values):
-        d = deepcopy(fixed)
-        for k, v in zip(grid_keys, values):
-            d[k] = v
-        results.append(d)
-
-    return results
-
 
 yaml=YAML(typ="safe")
 with open("measurement/configs/grid_cfg.yaml", encoding="utf-8") as f:
@@ -49,9 +20,9 @@ model_grid   = build_section_grid(grid_params["model"])
 save_grid    = build_section_grid(grid_params["save"])
 
 # BaseModelに変換
-measure_grid = [MeasureConfig(**m) for m in measure_grid]
-model_grid   = [RnnConfig(**m) for m in model_grid]
-save_grid    = [SaveConfig(**s) for s in save_grid]
+measure_grid = [MeasureConfig(**dict(m)) for m in measure_grid]
+model_grid   = [RnnConfig(**dict(m)) for m in model_grid]
+save_grid    = [SaveConfig(**dict(s)) for s in save_grid]
 
 # 直積された3つでさらに直積
 PARAMS_LIST = [

@@ -31,6 +31,6 @@ params:
 
     use_mlflow: true
     #experiment_name: measure
-    experiment_name: test
+    experiment_name: meas-test
 
     base_dir: exp_runs

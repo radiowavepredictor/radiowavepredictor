@@ -5,8 +5,8 @@ from dataclasses import replace
 from matplotlib.ticker import ScalarFormatter
 import matplotlib.pyplot as plt
 
-from simulation.configs.simulation_cfg import FADING_CFG
-from simulation.simu_func import calc_nakagami_rice_fading
+from simulation.configs.config import SIMULATION_CFG
+from simulation.function import calc_nakagami_rice_fading
 
 k_rice_list = [-np.inf, 0, 3, 5, 10, 20, 40]
 
@@ -15,9 +15,9 @@ plt.figure(figsize=(9,6))
 for k_rice_i in k_rice_list:
         
     fading_data=[]
-    for _ in range(FADING_CFG.data_set_num):
-        fading_cfg_i=replace(FADING_CFG,k_rice=k_rice_i)
-        fading_data.extend(calc_nakagami_rice_fading(fading_cfg_i))
+    for _ in range(SIMULATION_CFG.data_set_num):
+        simulation_cfg_i=replace(SIMULATION_CFG,k_rice=k_rice_i)
+        fading_data.extend(calc_nakagami_rice_fading(simulation_cfg_i))
     fading_data=np.array(fading_data)
     power_linear = np.abs(fading_data)**2
 

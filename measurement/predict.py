@@ -47,7 +47,6 @@ save_predict_data(
     result["true_data"],
     result["predict_data"],
     result["rmse"],
-    0,
     result["predict_result_figure"],
     SAVE_CFG
 )
