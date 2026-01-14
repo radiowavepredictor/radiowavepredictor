@@ -11,9 +11,7 @@ class CourceConfig(BaseModel):
 class MeasureConfig(BaseModel):
     model_config={'frozen':True}
     
-    train_cources:list[int]
-    val_cources:list[int]
-    predict_cource:int
+    cource:CourceConfig
     start_ratio:float
     end_ratio:float
     data_axis:Literal["time","distance"]

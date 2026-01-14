@@ -65,7 +65,7 @@ def multiple_csv_to_dataset(
 
 def load_learning_dataset(measure_cfg: MeasureConfig, rnn_cfg: RnnConfig):
     train_dataset, scaler = multiple_csv_to_dataset(
-        measure_cfg.train_cources,
+        measure_cfg.cource.train,
         rnn_cfg.input_len,
         measure_cfg,
     )
@@ -76,7 +76,7 @@ def load_learning_dataset(measure_cfg: MeasureConfig, rnn_cfg: RnnConfig):
     )
 
     val_dataset, scaler = multiple_csv_to_dataset(
-        measure_cfg.val_cources, rnn_cfg.input_len, measure_cfg, scaler
+        measure_cfg.cource.val, rnn_cfg.input_len, measure_cfg, scaler
     )
     val_dataset = val_dataset.batch(rnn_cfg.batch_size).prefetch(tf.data.AUTOTUNE)
 

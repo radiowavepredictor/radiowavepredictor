@@ -1,7 +1,8 @@
 measure:
-  train_cources: [1,2,4]
-  val_cources: [3,17]
-  predict_cource: 9 #予測したいコース番号
+  cource:
+    train: [1,2,4]
+    val: [3,17]
+    predict: 9 #予測したいコース番号
   start_ratio: 0 
   end_ratio: 1
   data_axis: time

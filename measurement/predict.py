@@ -29,7 +29,7 @@ print("\n\n")
 print("########予測の実行結果########")
 
 print(f"{"時間" if MEASURE_CFG.data_axis=="time" else "距離"}軸で実行します")
-csv_path= f"./measurement/result/WAVE{MEASURE_CFG.predict_cource:04d}/result_n{"t" if MEASURE_CFG.data_axis=="time" else "d"}-001.csv" 
+csv_path= f"./measurement/result/WAVE{MEASURE_CFG.cource.predict:04d}/result_n{"t" if MEASURE_CFG.data_axis=="time" else "d"}-001.csv" 
 data_csv = pd.read_csv(csv_path, usecols=["ReceivedPower[dBm]"])
 measure_data = data_csv.values.astype(np.float64) # csv用のデータ構造からnumpy配列に変換
 
