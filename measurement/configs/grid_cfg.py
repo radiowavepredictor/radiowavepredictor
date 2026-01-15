@@ -19,11 +19,6 @@ measure_grid = build_section_grid(grid_params["measure"])
 model_grid   = build_section_grid(grid_params["model"])
 save_grid    = build_section_grid(grid_params["save"])
 
-# BaseModelに変換
-measure_grid = [MeasureConfig(**dict(m)) for m in measure_grid]
-model_grid   = [RnnConfig(**dict(m)) for m in model_grid]
-save_grid    = [SaveConfig(**dict(s)) for s in save_grid]
-
 # 直積された3つでさらに直積
 PARAMS_LIST = [
     {
@@ -33,6 +28,13 @@ PARAMS_LIST = [
     }
     for m, mdl, s in product(measure_grid, model_grid, save_grid)
 ]
+
+# BaseModelに変換
+for param in PARAMS_LIST:
+    param['measure'] = MeasureConfig(**param['measure']) #type:ignore
+    param['model']   = RnnConfig(**param['model']) #type:ignore
+    param['save']    = SaveConfig(**param["save"]) #type:ignore
+
 
 print(f"全組み合わせ数: {len(PARAMS_LIST)}")
 print(PARAMS_LIST[0])
