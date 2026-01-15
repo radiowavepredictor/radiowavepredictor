@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from keras.models import load_model
 import joblib
 
+from common.function.save import save_predict_data
 from simulation.configs.config import RNN_CFG, SAVE_CFG, SIMULATION_CFG
 from simulation.function import evaluate_model, wrap_save_predict_data
 

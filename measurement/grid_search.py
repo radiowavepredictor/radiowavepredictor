@@ -1,7 +1,8 @@
 from joblib import Parallel, delayed
 
 from common.schema import RnnConfig,SaveConfig
-from common.function import create_model,predict,save_create_data,save_predict_data
+from common.function.function import create_model,predict
+from common.function.save import save_create_data,save_predict_data
 from measurement.function import *
 from measurement.configs.schema import MeasureConfig
 from measurement.configs.grid_cfg import PARAMS_LIST,N_JOBS
@@ -51,7 +52,7 @@ def run_single_experiment(param):
         run_id,
         result["true_data"],
         result["predict_data"],
-        result["rmse"],
+        result["rmse_arr"][rnn_cfg.out_steps_num-1],
         result["predict_result_figure"],
         save_cfg,
     )

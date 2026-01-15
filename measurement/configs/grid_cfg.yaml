@@ -3,10 +3,13 @@ n_jobs: 4 # いくつ並列処理させるか
 params: 
   measure:
     cource:
-      #- train: [2,4,5,6,7,8,9,10,11,12,13,14,15,16]
-      - train: [2,4,5]
+      - train: [2,4,5,6,7,8,9,10,11,12,13,14,15,16]
+      #- train: [2,4,5]
         val: [3,17]
         predict: 1
+      - train: [1,2,4,6,7,8,9,10,11,12,13,14,15,16]
+        val: [3,17]
+        predict: 5
     start_ratio: 0
     end_ratio: 1
     data_axis: time
@@ -17,11 +20,13 @@ params:
     in_features: 1
     input_len: [10,50]
     hidden_nums: 
-      - [20]
-    out_steps_num: [1]
-    batch_size: [128]
-    epochs: 100
-    learning_rate: [0.001,0.002]
+      - [32,32]
+      - [48,32]
+      - [64,32]
+    out_steps_num: 5
+    batch_size: 128
+    epochs: 300
+    learning_rate: [0.0001,0.0007,0.0002]
     patience: 10
   
   save:
@@ -30,7 +35,7 @@ params:
     plot_range: 200
 
     use_mlflow: true
-    #experiment_name: measure
-    experiment_name: meas-test
+    experiment_name: measure-5-point
+    #experiment_name: meas-test
 
     base_dir: exp_runs

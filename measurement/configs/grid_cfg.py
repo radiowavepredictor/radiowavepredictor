@@ -2,7 +2,7 @@ from ruamel.yaml import YAML
 from itertools import product
 
 from common.schema import RnnConfig,SaveConfig
-from common.function import build_section_grid
+from common.function.function import build_section_grid
 from measurement.configs.schema import MeasureConfig
 # ???もっと汎用的なコードにしたほうがいい
 

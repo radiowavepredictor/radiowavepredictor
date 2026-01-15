@@ -4,7 +4,8 @@ import matplotlib.pyplot as plt
 import joblib
 from keras.models import load_model
 
-from common.function import predict,save_predict_data
+from common.function.function import predict
+from common.function.save import save_predict_data
 from measurement.configs.config import RNN_CFG,SAVE_CFG,MEASURE_CFG
 
 # run_idの取得
@@ -28,8 +29,8 @@ scaler=joblib.load(scaler_path)
 print("\n\n")
 print("########予測の実行結果########")
 
-print(f"{"時間" if MEASURE_CFG.data_axis=="time" else "距離"}軸で実行します")
-csv_path= f"./measurement/result/WAVE{MEASURE_CFG.cource.predict:04d}/result_n{"t" if MEASURE_CFG.data_axis=="time" else "d"}-001.csv" 
+print(f"{'時間' if MEASURE_CFG.data_axis=='time' else '距離'}軸で実行します")
+csv_path= f"./measurement/result/WAVE{MEASURE_CFG.cource.predict:04d}/result_n{'t' if MEASURE_CFG.data_axis=='time' else 'd'}-001.csv" 
 data_csv = pd.read_csv(csv_path, usecols=["ReceivedPower[dBm]"])
 measure_data = data_csv.values.astype(np.float64) # csv用のデータ構造からnumpy配列に変換
 

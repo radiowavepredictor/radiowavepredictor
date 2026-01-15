@@ -1,7 +1,7 @@
-from dataclasses import replace
 from joblib import Parallel, delayed
 
-from common.function import create_model,save_create_data
+from common.function.function import create_model
+from common.function.save import save_create_data
 from common.schema import RnnConfig,SaveConfig
 from simulation.function import *
 from simulation.configs.schema import SimulationConfig
@@ -13,7 +13,6 @@ def run_single_experiment(param):
     simulation_cfg: SimulationConfig = param["simulation"]
     rnn_cfg: RnnConfig = param["model"]
     save_cfg:SaveConfig=param["save"]
-
 
     (dataset, val_dataset), scaler= load_fading_dataset(simulation_cfg, rnn_cfg)
 

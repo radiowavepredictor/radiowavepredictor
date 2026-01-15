@@ -2,9 +2,9 @@ import os
 import numpy as np
 from ruamel.yaml import YAML
 from sklearn.preprocessing import StandardScaler
-import tensorflow as tf
 
-from common.function import mw_to_dbm, predict, save_predict_data,to_yaml_safe,array_of_array_to_dataset
+from common.function.function import mw_to_dbm, predict,to_yaml_safe,array_of_array_to_dataset
+from common.function.save import save_predict_data
 from common.schema import RnnConfig, SaveConfig
 from simulation.configs.schema import SimulationConfig
 

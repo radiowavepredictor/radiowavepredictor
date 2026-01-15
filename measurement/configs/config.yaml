@@ -1,6 +1,7 @@
 measure:
   cource:
-    train: [1,2,4,5,6,7,8,10,11,12,13,14,15,16]
+    #train: [1,2,4,5,6,7,8,10,11,12,13,14,15,16]
+    train: [1,2,4]
     val: [3,17]
     predict: 16 #予測したいコース番号
   start_ratio: 0 
@@ -16,8 +17,8 @@ model:
   out_steps_num: 3 #何点予測するか
   batch_size: 128
   epochs: 100
-  learning_rate: 0.0007
-  patience: 10
+  learning_rate: 0.001
+  patience: 2
 
 save:
   recursive_num: 500 #再帰予測で予測する回数(現状使ってない)
