@@ -10,7 +10,7 @@ import joblib
 from datetime import datetime
 from itertools import product
 from copy import deepcopy
-
+import time
 
 from keras import Input
 from keras.models import Sequential
@@ -18,8 +18,7 @@ from keras.layers import Dense, Activation
 from keras.callbacks import EarlyStopping
 from keras.regularizers import l2
 from keras.utils import timeseries_dataset_from_array
-import time
-from sklearn.preprocessing import StandardScaler
+import tensorflow as tf
 
 from common.schema import RnnConfig,SaveConfig
 
@@ -28,25 +27,6 @@ def dbm_to_mw(dbm):
 
 def mw_to_dbm(mw):
     return 10 * np.log10(mw)
-
-'''多分消していい
-def min_max_normalize(data, feature_range=(0, 1)):
-    data_min = data.min(axis=0)
-    data_max = data.max(axis=0)
-    scale = feature_range[1] - feature_range[0]
-    normalized = feature_range[0] + (data - data_min) * scale / (data_max - data_min)
-    return normalized
-
-
-def min_max_denormalize(normalized_data, base_data, feature_range=(0, 1)):
-    base_data_min = base_data.min(axis=0)
-    base_data_max = base_data.max(axis=0)
-    scale = feature_range[1] - feature_range[0]
-    data = (normalized_data - feature_range[0]) * (
-        base_data_max - base_data_min
-    ) / scale + base_data_min
-    return data
-'''
 
 def create_model(
     dataset,
@@ -94,7 +74,7 @@ def create_model(
     }
 
 
-def predict(model, data:np.ndarray,scaler:StandardScaler, input_len, plot_start, plot_range,verbose=1):
+def predict(model, data:np.ndarray,scaler:StandardScaler, rnn_cfg:RnnConfig, plot_start, plot_range,verbose=1):
     """
     Parameters
     ----------
@@ -103,6 +83,8 @@ def predict(model, data:np.ndarray,scaler:StandardScaler, input_len, plot_start,
         特徴量が一つの場合はreshape(-1,1)してください
     
     Returns
+    rmse_arr : list[float]
+        out_steps_num分のrmseの配列
     ----------
     """
     norm_data = scaler.transform(data)
@@ -110,7 +92,7 @@ def predict(model, data:np.ndarray,scaler:StandardScaler, input_len, plot_start,
     x = timeseries_dataset_from_array(
         norm_data,
         targets=None,
-        sequence_length=input_len,
+        sequence_length=rnn_cfg.input_len,
         batch_size=32,
         shuffle=False,
     )
@@ -120,19 +102,22 @@ def predict(model, data:np.ndarray,scaler:StandardScaler, input_len, plot_start,
 
     print(denormalized_predicted.shape)
     print(data.shape)
-    rmse = np.sqrt(
-        np.mean((denormalized_predicted[:-1] - data[input_len:]) ** 2)
-    )
-
+    rmse_arr = np.array([
+        np.sqrt(
+            np.mean((denormalized_predicted[:-i-1,i].reshape(-1,1) - data[rnn_cfg.input_len+i:]) ** 2)
+        )
+        for i in range(rnn_cfg.out_steps_num)
+    ])
+    
     # plotするときに単位を秒にするための処理
     # ???ここから分かりづらいかも 変数名も処理も分かりやすくしたい
     x_true_data = np.linspace(
         plot_start / 20, (plot_start + plot_range) / 20, plot_range
     )
     x_predict = np.linspace(
-        (plot_start + input_len) / 20,
+        (plot_start + rnn_cfg.input_len) / 20,
         (plot_start + plot_range) / 20,
-        plot_range - input_len,
+        plot_range - rnn_cfg.input_len,
     )
 
     predict_result_fig = plt.figure()
@@ -147,14 +132,14 @@ def predict(model, data:np.ndarray,scaler:StandardScaler, input_len, plot_start,
     )
     plt.plot(
         x_predict,
-        denormalized_predicted[plot_start : plot_start + plot_range - input_len],
+        denormalized_predicted[plot_start : plot_start + plot_range - rnn_cfg.input_len],
         color="g",
         label="predict_data",
     )
     plt.legend()
 
     return {
-        "rmse": rmse,
+        "rmse_arr": rmse_arr,
         "predict_result_figure": predict_result_fig,
         "true_data": data,
         "predict_data": denormalized_predicted,  # ???reshape_denormalized_predictedのほうがいいのかもしれない
@@ -202,7 +187,7 @@ def struct_to_flat_dict(obj)->dict:
 def to_yaml_safe(value:dict)->dict:
     """
     入れ子の構造を再帰的に走査し、YAMLに渡せる型に変換する
-    構造体がネストしていると、__name__に変わってしまうため、基本的にはflattenしてから使う
+    中で構造体がネストしていると、__name__に変わってしまうため、基本的にはflattenしてから使う
     - Enum -> .value
     - クラス / 構造体 -> .__name__
     - NumPy配列 -> list
@@ -370,3 +355,48 @@ def build_section_grid(section: dict):
 
     return results
 
+def make_target(data,input_len,out_steps_num):
+    """
+    N点予測に合わせて教師データを作成する
+    """
+    targets = np.stack(
+        [
+            data[i : i + out_steps_num]
+            for i in range(input_len, len(data) - out_steps_num + 1)
+        ],
+        axis=0,
+    )
+    return targets
+
+def array_of_array_to_dataset(arr_of_arr,rnn_cfg:RnnConfig):
+    """
+    時系列のarray_of_arrayからkerasのmodel.fit()に渡せるようにデータセットを作る
+    各行が一つの時系列データであることを想定しているので、データ同士が干渉しないよう、
+    各行ごとにdatasetにして、最後にそれをつなげて1次元にしている
+    """
+    # 配列の各行をデータセット化する
+    dataset_arr = []
+    for inner_arr in arr_of_arr:
+        targets=make_target(inner_arr,rnn_cfg.input_len,rnn_cfg.out_steps_num)
+        # datasetの中身はtensorflow特有のオブジェクトで入力と出力(入力に対する答え)のセットが入っている
+        dataset_i = timeseries_dataset_from_array(
+            data=inner_arr,
+            targets=targets,
+            sequence_length=rnn_cfg.input_len,
+            batch_size=None,  # type:ignore[arg-type]
+            shuffle=False,
+        )
+        dataset_arr.append(dataset_i)
+
+    # データセットをつなげて一つにする
+    dataset = dataset_arr[0]
+    for ds in dataset_arr[1:]:
+        dataset = dataset.concatenate(ds)
+        
+    dataset = (
+        dataset.shuffle(buffer_size=10000)
+        .batch(rnn_cfg.batch_size)
+        .prefetch(tf.data.AUTOTUNE)
+    )
+
+    return dataset

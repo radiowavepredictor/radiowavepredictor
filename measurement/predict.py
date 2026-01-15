@@ -37,20 +37,23 @@ result=predict(
     model,
     measure_data,
     scaler,
-    RNN_CFG.input_len,
+    RNN_CFG,
     SAVE_CFG.plot_start,
     SAVE_CFG.plot_range,
 )
+
+print(result["predict_data"])
 
 save_predict_data(
     run_id,
     result["true_data"],
     result["predict_data"],
-    result["rmse"],
+    result["rmse_arr"][RNN_CFG.out_steps_num-1],
     result["predict_result_figure"],
     SAVE_CFG
 )
 
-print(f"rmse:{result['rmse']:.2f}")
+
+print(f"rmse:{result['rmse_arr']}")
 print("##############################")
 plt.show()

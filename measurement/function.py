@@ -2,9 +2,9 @@ import numpy as np
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 import tensorflow as tf
-from keras.utils import timeseries_dataset_from_array
 
 from common.schema import RnnConfig
+from common.function import array_of_array_to_dataset
 from measurement.configs.schema import MeasureConfig
 
 def read_csv(read_cource, measure_cfg: MeasureConfig):
@@ -18,13 +18,22 @@ def read_csv(read_cource, measure_cfg: MeasureConfig):
     np_data = csv_data.values.astype(np.float64)
     return np_data
 
-
+#??? scalerは渡さないといけないようにして、fitを関数外で行うようにしたほうがいいかも
 def multiple_csv_to_dataset(
     read_cources,
-    input_len,
+    rnn_cfg:RnnConfig,
     measure_cfg: MeasureConfig,
     scaler: StandardScaler | None = None,
 ):
+    """
+    Parameters
+    ----------
+    scaler: StandardScaler | None
+        scalerを渡さない場合、scalerを作って、そのとき関数内で使うデータでfit-transformする
+        渡されている場合、transformのみを行う
+    Returns
+    ----------
+    """
     # csv読み込み
     measure_data_arr = []
     for cource in read_cources:
@@ -36,48 +45,18 @@ def multiple_csv_to_dataset(
         # データ配列を一つにつなげる(標準化の計算を行うため)
         data_flatten = np.concatenate(measure_data_arr)
         scaler = StandardScaler()
-        data_norm_arr = scaler.fit(data_flatten)
-
+        scaler.fit(data_flatten)
+        
     data_norm_arr = []
     for measure_data in measure_data_arr: # measure_dataはnp化できないので、for分で各行を正規化する
         data_norm_arr.append(scaler.transform(measure_data))
 
-    # 配列の各行をデータセット化する
-    dataset_arr = []
-    for data_norm in data_norm_arr:
-        # datasetの中身はtensorflow特有のオブジェクトで入力と出力(入力に対する答え)のセットが入っている
-        dataset_i = timeseries_dataset_from_array(
-            data=data_norm,
-            targets=data_norm[input_len:],
-            sequence_length=input_len,
-            batch_size=None,  # type:ignore[arg-type]
-            shuffle=False,
-        )
-        dataset_arr.append(dataset_i)
-
-    # データセットをつなげて一つにする
-    dataset = dataset_arr[0]
-    for ds in dataset_arr[1:]:
-        dataset = dataset.concatenate(ds)
+    dataset=array_of_array_to_dataset(data_norm_arr,rnn_cfg)
 
     return dataset, scaler
 
 
 def load_learning_dataset(measure_cfg: MeasureConfig, rnn_cfg: RnnConfig):
-    train_dataset, scaler = multiple_csv_to_dataset(
-        measure_cfg.cource.train,
-        rnn_cfg.input_len,
-        measure_cfg,
-    )
-    train_dataset = (
-        train_dataset.shuffle(buffer_size=10000)
-        .batch(rnn_cfg.batch_size)
-        .prefetch(tf.data.AUTOTUNE)
-    )
-
-    val_dataset, scaler = multiple_csv_to_dataset(
-        measure_cfg.cource.val, rnn_cfg.input_len, measure_cfg, scaler
-    )
-    val_dataset = val_dataset.batch(rnn_cfg.batch_size).prefetch(tf.data.AUTOTUNE)
-
+    train_dataset,scaler=multiple_csv_to_dataset(measure_cfg.cource.train,rnn_cfg,measure_cfg)
+    val_dataset,scaler=multiple_csv_to_dataset(measure_cfg.cource.val,rnn_cfg,measure_cfg,scaler)
     return (train_dataset, val_dataset), scaler

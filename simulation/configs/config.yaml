@@ -1,6 +1,6 @@
 simulation:
-  data_num: 1000 #一つのデータセットのデータ数
-  data_set_num: 8 #作成するデータセットの数(測定におけるコース数)
+  data_num: 4000 #一つのデータセットのデータ数
+  data_set_num: 17 #作成するデータセットの数(測定におけるコース数)
   l: 30 # 多重波の数
   delta_d: 0.005 #サンプル間隔[m]
   c: 3e8  # 光速 [m/s]
@@ -15,7 +15,7 @@ model:
   in_features: 1 #入力特徴量の数(入力するデータが何種類あるか)
   input_len: 50
   hidden_nums: [20]
-  out_steps_num: 1 #何点予測するか
+  out_steps_num: 3 #何点予測するか
   batch_size: 256
   epochs: 100
   learning_rate: 0.0005

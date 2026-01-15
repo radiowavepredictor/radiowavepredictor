@@ -42,7 +42,7 @@ def run_single_experiment(param):
         model,
         measure_data,
         scaler,
-        rnn_cfg.input_len,
+        rnn_cfg,
         save_cfg.plot_start,
         save_cfg.plot_range,
     )

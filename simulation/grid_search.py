@@ -36,14 +36,14 @@ def run_single_experiment(param):
 
     model = create_result["model"]
     
-    first_result,rmse_mean=evaluate_model(model,scaler,simulation_cfg,rnn_cfg,save_cfg)
+    first_result,rmse_mean_arr=evaluate_model(model,scaler,simulation_cfg,rnn_cfg,save_cfg)
     
     wrap_save_predict_data(
         run_id,
         first_result["true_data"],
         first_result["predict_data"],
-        first_result["rmse"],
-        rmse_mean,
+        first_result["rmse_arr"][rnn_cfg.out_steps_num-1],
+        rmse_mean_arr[rnn_cfg.out_steps_num-1],
         first_result["predict_result_figure"],
         save_cfg
     )
