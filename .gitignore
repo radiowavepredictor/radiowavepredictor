@@ -14,7 +14,7 @@ sin.py
 sin_predict.py
 
 test/
-
+simu_waves/
 
 exp_runs/
 mlruns/

@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
-import tensorflow as tf
 
 from common.schema import RnnConfig
 from common.function.function import array_of_array_to_dataset
@@ -54,7 +53,6 @@ def multiple_csv_to_dataset(
     dataset=array_of_array_to_dataset(data_norm_arr,rnn_cfg)
 
     return dataset, scaler
-
 
 def load_learning_dataset(measure_cfg: MeasureConfig, rnn_cfg: RnnConfig):
     train_dataset,scaler=multiple_csv_to_dataset(measure_cfg.cource.train,rnn_cfg,measure_cfg)
