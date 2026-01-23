@@ -1,7 +1,6 @@
 measure:
   cource:
-    #train: [1,2,4,5,6,7,8,10,11,12,13,14,15,16]
-    train: [1,2,4]
+    train: [1,2,4,5,6,7,8,10,11,12,13,14,15,16]
     val: [3,17]
     predict: 16 #予測したいコース番号
   start_ratio: 0 
@@ -14,7 +13,7 @@ model:
   in_features: 1 #入力特徴量の数(入力するデータが何種類あるか)
   input_len: 10
   hidden_nums: [20]
-  out_steps_num: 3 #何点予測するか
+  out_steps_num: 1 #何点予測するか
   batch_size: 128
   epochs: 100
   learning_rate: 0.001

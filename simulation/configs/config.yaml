@@ -1,6 +1,6 @@
 simulation:
-  data_num: 4000 #一つのデータセットのデータ数
-  data_set_num: 17 #作成するデータセットの数(測定におけるコース数)
+  data_num: 1000 #一つのデータセットのデータ数
+  data_set_num: 8 #作成するデータセットの数(測定におけるコース数)
   l: 30 # 多重波の数
   delta_d: 0.005 #サンプル間隔[m]
   c: 3e8  # 光速 [m/s]
@@ -15,11 +15,11 @@ model:
   in_features: 1 #入力特徴量の数(入力するデータが何種類あるか)
   input_len: 50
   hidden_nums: [20]
-  out_steps_num: 3 #何点予測するか
-  batch_size: 256
-  epochs: 100
+  out_steps_num: 1 #何点予測するか
+  batch_size: 512
+  epochs: 300
   learning_rate: 0.0005
-  patience: 5
+  patience: 2
 
 save:
   recursive_num: 500 #再帰予測で予測する回数(現状使ってない)
@@ -27,7 +27,7 @@ save:
   plot_range: 200 #グラフとして表示する範囲
 
   use_mlflow: true #mlflowを使うかどうか(mlflowが使えない環境ではFalseを指定)
-  experiment_name: test-2
+  experiment_name: test
 
   base_dir: exp_runs #mlflowを使わないときの保存フォルダ名
 

@@ -1,20 +1,23 @@
-### mlflowではなくjson形式で保存したデータをmlflowのデータに合体させる ###
+### experimentのフォルダをmlflowのexperimentに合体させる ###
 ### mlrunsフォルダとexp_runsフォルダ(名前変えてるかも)両方をRadioWavePredictフォルダの直下において実行する ###
 ### EXPERIMENT_NAME(実験名)が適切か、合体するデータ同士で保存してるデータの内容が全然違わないか、などを確認してから実行する ###
-import json
 import mlflow
 from pathlib import Path
+from ruamel.yaml import YAML
 
-from simulation.function import *
 from simulation.configs.config import SAVE_CFG
 
-experiment_dir=Path(f"{SAVE_CFG.}/{EXPERIMENT_NAME}")
+MERGE_EXPERIMENT=Path(SAVE_CFG.base_dir) / "simulation-5"#
+MLFLOW_EXPERIMENT="simulation-5-point"
 
-mlflow.set_experiment(EXPERIMENT_NAME)
+mlflow.set_experiment(MLFLOW_EXPERIMENT)
 
-for run_dir in experiment_dir.iterdir():
-    with open(f"{run_dir}/data.json") as f:
-        data = json.load(f)
+for run_dir in MERGE_EXPERIMENT.iterdir():
+    yaml=YAML(typ="safe")
+    yaml.indent(mapping=2, sequence=4, offset=2)  # インデントの調整
+    with open(run_dir/"data.yaml", "r") as f:
+        data=yaml.load(f)
+
 
     run_name = data.get("run_name", run_dir.name)
     params = data.get("params", {})
@@ -36,5 +39,4 @@ for run_dir in experiment_dir.iterdir():
             mlflow.set_tag("datetime", datetime)
 
         for item in run_dir.iterdir():
-            if item.name != "data.json":
-                mlflow.log_artifact(str(item))
+            mlflow.log_artifact(str(item))

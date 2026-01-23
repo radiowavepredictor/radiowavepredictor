@@ -2,16 +2,19 @@ import os
 import numpy as np
 from ruamel.yaml import YAML
 from sklearn.preprocessing import StandardScaler
+from urllib.parse import unquote,urlparse
+from pathlib import Path
+import matplotlib.pyplot as plt
 
 from common.function.function import mw_to_dbm, predict,to_yaml_safe,array_of_array_to_dataset
 from common.function.save import save_predict_data
 from common.schema import RnnConfig, SaveConfig
 from simulation.configs.schema import SimulationConfig
 
-
-def calc_fading(simu_cfg: SimulationConfig):
-    theta = np.random.rand(simu_cfg.l) * 2 * np.pi
-    phi = np.random.rand(simu_cfg.l) * 2 * np.pi
+def calc_fading(simu_cfg: SimulationConfig,seed=42):
+    rnd=np.random.RandomState(seed)
+    theta = rnd.rand(simu_cfg.l) * 2 * np.pi
+    phi = rnd.rand(simu_cfg.l) * 2 * np.pi
 
     fading_data_list = []
     x = 0.0
@@ -27,9 +30,10 @@ def calc_fading(simu_cfg: SimulationConfig):
     return np.array(fading_data_list)
 
 
-def calc_nakagami_rice_fading(simu_cfg: SimulationConfig):
-    theta0 = np.random.rand() * 2 * np.pi
-    scattered_data_list = calc_fading(simu_cfg)
+def calc_nakagami_rice_fading(simu_cfg: SimulationConfig,seed=42):
+    #theta0 = np.random.rand() * 2 * np.pi
+    theta0 = 0
+    scattered_data_list = calc_fading(simu_cfg,seed)
     scattered_data_list = (
         scattered_data_list
         / np.sqrt(np.mean(np.abs(scattered_data_list) ** 2))
@@ -40,6 +44,7 @@ def calc_nakagami_rice_fading(simu_cfg: SimulationConfig):
     for _ in range(simu_cfg.data_num):
         x += simu_cfg.delta_d
         direct_data = np.sqrt(simu_cfg.k_rice / (simu_cfg.k_rice + 1.0)) * np.exp(
+        #direct_data =  np.exp(
             1j * ((2 * np.pi / simu_cfg.lambda_0) * x + theta0)
         )
         direct_data_list.append(direct_data)
@@ -115,6 +120,7 @@ def evaluate_model(
         power = np.abs(fading_data) ** 2
         power_db = 10 * np.log10(power)
         power_db = power_db.reshape(-1, 1)
+        plt.close("all")
         result_i = predict(
             model,
             power_db,
@@ -151,11 +157,18 @@ def wrap_save_predict_data(
 
         with mlflow.start_run(run_id):
             artifact_dir = mlflow.get_artifact_uri()
-            save_path = artifact_dir.replace("file:", "")
+            if artifact_dir.startswith("file:"):
+                save_path=unquote(urlparse(artifact_dir).path)
+                if len(save_path)>=3 and save_path[0]=="/" and save_path[2]==":":
+                    save_path=save_path[1:]
+            else:
+                save_path=artifact_dir
+
             mlflow.log_metric("rmse_mean", rmse_mean)
     else:
         save_path = save_cfg.save_dir
         
+    save_dir=Path(save_path)
     yaml = YAML(typ="safe")
     yaml.indent(mapping=2, sequence=4, offset=2)  # インデントの調整
     with open(os.path.join(save_path, "data.yaml"), "r") as f:

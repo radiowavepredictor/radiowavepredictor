@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 from keras.models import load_model
 import joblib
 
-from common.function.save import save_predict_data
 from simulation.configs.config import RNN_CFG, SAVE_CFG, SIMULATION_CFG
 from simulation.function import evaluate_model, wrap_save_predict_data
 
@@ -25,7 +24,6 @@ else:
 
 model = load_model(model_path)
 scaler = joblib.load(scaler_path)
-
 
 print("\n\n")
 print("########予測の実行結果########")

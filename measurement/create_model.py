@@ -1,18 +1,12 @@
 import matplotlib.pyplot as plt
-import time 
 
 from common.function.function import create_model
 from common.function.save import save_create_data
 from measurement.configs.config import MEASURE_CFG,RNN_CFG,SAVE_CFG
 from measurement.function import load_learning_dataset
 
-#コード実行時間計測
-start_time=time.time()
 
 (train_dataset,val_dataset),scaler=load_learning_dataset(MEASURE_CFG,RNN_CFG)
-
-end_time=time.time()
-print(f"実行時間:{(end_time-start_time):2f}秒")
 
 result=create_model(
     train_dataset,

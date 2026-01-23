@@ -1,11 +1,14 @@
-import os
 import numpy as np
 from ruamel.yaml import YAML
 import joblib
 from datetime import datetime
+from pathlib import Path
+from urllib.parse import unquote,urlparse
 
 from common.function.function import struct_to_flat_dict,to_yaml_safe
 from common.schema import RnnConfig,SaveConfig
+
+
 
 def save_create_data(
     model,
@@ -35,11 +38,11 @@ def save_create_data(
 
         mlflow.set_experiment(save_cfg.experiment_name)
         with mlflow.start_run(run_name=save_cfg.run_name) as run:
-            # measure_cfg を全部保存
+            # data_cfg を保存
             for k, v in data_params.items():
                 mlflow.log_param(k, v)
 
-            # rnn_cfg を全部保存
+            # rnn_cfg を保存
             for k, v in rnn_params.items():
                 mlflow.log_param(k, v)
 
@@ -47,17 +50,21 @@ def save_create_data(
             mlflow.log_figure(history_figure, "loss_curve.png")
 
             artifact_dir = mlflow.get_artifact_uri()
-            save_path = artifact_dir.replace("file:", "")
+            if artifact_dir.startswith("file:"):
+                save_path=unquote(urlparse(artifact_dir).path)
+                if len(save_path)>=3 and save_path[0]=="/" and save_path[2]==":":
+                    save_path=save_path[1:]
+            else:
+                save_path=artifact_dir
 
             run_id = run.info.run_id
     else:
-        os.makedirs(save_cfg.save_dir, exist_ok=True)
-
         save_path = save_cfg.save_dir
-        history_figure.savefig(os.path.join(save_path, "loss_curve.png"))
+        save_path.mkdir(parents=True, exist_ok=True)
 
+        history_figure.savefig(save_path / "loss_curve.png")
         run_id = save_cfg.run_name
-        
+
     data = {
         "run_name": save_cfg.run_name,
         "datetime": datetime.now().isoformat(),
@@ -69,16 +76,20 @@ def save_create_data(
             "training_time": training_time,
         },
     }
+
+    save_dir=Path(save_path)
     yaml = YAML()
-    yaml.indent(mapping=2, sequence=4, offset=2)  # インデントの調整
-    with open(os.path.join(save_path, "data.yaml"), "w") as f:
+    yaml.indent(mapping=2, sequence=4, offset=2)
+
+    data_yaml_path = save_dir / "data.yaml"
+    with data_yaml_path.open("w") as f:
         yaml.dump(data, f)
 
-    joblib.dump(scaler, os.path.join(save_path, "scaler.pkl"))
-    model.save(os.path.join(save_path, "model.keras"))
-    
+    joblib.dump(scaler, save_dir / "scaler.pkl")
+    model.save(save_dir / "model.keras")
+
     return run_id
-    
+
 def save_predict_data(
     run_id,
     true_data,
@@ -93,25 +104,35 @@ def save_predict_data(
 
         with mlflow.start_run(run_id):
             artifact_dir = mlflow.get_artifact_uri()
-            save_path = artifact_dir.replace("file:", "")
+            if artifact_dir.startswith("file:"):
+                save_path=unquote(urlparse(artifact_dir).path)
+                if len(save_path)>=3 and save_path[0]=="/" and save_path[2]==":":
+                    save_path=save_path[1:]
+            else:
+                save_path=artifact_dir
 
             mlflow.log_metric("rmse", rmse)
             mlflow.log_figure(predict_result_fig, "predict_results.png")
 
     else:
         save_path = save_cfg.save_dir
-        predict_result_fig.savefig(os.path.join(save_path),"predict_results.png")
-        
+        save_path.mkdir(parents=True, exist_ok=True)
+        predict_result_fig.savefig(save_path / "predict_results.png")
+
+    save_dir=Path(save_path)
     yaml = YAML(typ="safe")
-    yaml.indent(mapping=2, sequence=4, offset=2)  # インデントの調整
-    with open(os.path.join(save_path, "data.yaml"), "r") as f:
-        data=yaml.load(f)
-        
+    yaml.indent(mapping=2, sequence=4, offset=2)
+
+    data_yaml_path = save_dir / "data.yaml"
+
+    with data_yaml_path.open("r") as f:
+        data = yaml.load(f)
+
     data["metrics"]["rmse"] = rmse
-    data=to_yaml_safe(data)
-    
-    with open(os.path.join(save_path, "data.yaml"), "w") as f:
+    data = to_yaml_safe(data)
+
+    with data_yaml_path.open("w") as f:
         yaml.dump(data, f)
-    
-    np.save(os.path.join(save_path, "true.npy"), true_data)
-    np.save(os.path.join(save_path, "predicted.npy"), predict_data)
+
+    np.save(save_dir / "true.npy", true_data)
+    np.save(save_dir / "predicted.npy", predict_data)
