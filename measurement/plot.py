@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import japanize_matplotlib
 import joblib
 from keras.models import load_model
+import time
 
 from common.function.function import predict
 from common.schema import RnnConfig
@@ -48,6 +49,7 @@ csv_path= f"./measurement/result/WAVE{cource:04d}/result_nt-001.csv"
 data_csv = pd.read_csv(csv_path, usecols=["ReceivedPower[dBm]"])
 measure_data = data_csv.values.astype(np.float64) # csv用のデータ構造からnumpy配列に変換
 
+in_10_start=time.time()
 result=predict(
     model_in_10,
     measure_data,
@@ -67,6 +69,8 @@ result=predict(
     0,
     100
 )
+in_10_end=time.time()
+in_50_start=time.time()
 result_2=predict(
     model_in_50,
     measure_data,
@@ -86,25 +90,11 @@ result_2=predict(
     0,
     100
 )
+in_50_end=time.time()
 plt.close("all")
-'''
-x_true_data = np.linspace(
-    plot_start / 20, (plot_start + plot_range) / 20, plot_range
-)
-start_10=(10+out_steps-1-plot_start) if plot_start<10+out_steps-1 else 0
-x_predict_10 = np.linspace(
-    (plot_start +start_10)  / 20,
-    (plot_start + plot_range) / 20,
-    plot_range - start_10
-)
-start_50=(50+out_steps-1-plot_start) if plot_start<50+out_steps-1 else 0
-x_predict_50=np.linspace(
-    (plot_start+start_50)/20,
-    (plot_start+plot_range)/20,
-    plot_range-start_50
-)
-'''
+
 dt=0.05
+
 x_plot = np.arange(plot_start*dt,(plot_start+plot_range)*dt,dt)
 # 10サンプル入力の場合
 start_10 = (10 + out_steps - 1 - plot_start) if plot_start < 10 + out_steps - 1 else 0
@@ -114,6 +104,7 @@ x_predict_10 = np.arange(plot_start + start_10, plot_start + plot_range) * dt
 start_50 = (50 + out_steps - 1 - plot_start) if plot_start < 50 + out_steps - 1 else 0
 x_predict_50 = np.arange(plot_start + start_50, plot_start + plot_range) * dt
 fig = plt.figure(figsize=(8,3.5))
+plt.rcParams["font.size"] = 10.5
 plt.xlabel("経過時間[s]")
 plt.ylabel("受信電力レベル[dBm]")
 plt.plot(
@@ -121,9 +112,9 @@ plt.plot(
     measure_data[plot_start : plot_start + plot_range],
     color="black",
     alpha=0.5,
-    linewidth=1,
+    linewidth=1.3,
     marker="o",        
-    markersize=3,
+    markersize=3.6,
     markerfacecolor="black",
     markeredgecolor="black",
 
@@ -133,15 +124,15 @@ plt.plot(
     x_predict_10,
     result["predict_data"][plot_start + start_10 -10-out_steps+1 : plot_start + plot_range-10-out_steps+1,out_steps-1],
     color="tab:green",
-    linestyle="-",
+    linestyle="--",
     alpha=0.9,
     marker="o",        
-    markersize=3,
+    markersize=3.6,
     markerfacecolor="green",
     markeredgecolor="green",
 
 
-    linewidth=1,
+    linewidth=1.4,
     label="予測値(入力長-10)",
 )
 
@@ -149,23 +140,77 @@ plt.plot(
     x_predict_50,
     result_2["predict_data"][plot_start+start_50-50-out_steps+1 : plot_start + plot_range - 50-out_steps+1,out_steps-1],
     color="tab:red",
-    linestyle="-",
-    alpha=0.8,
+    linestyle="--",
+    alpha=0.9,
     marker="o",        
-    markersize=3,
+    markersize=3.6,
     markerfacecolor="red",
     markeredgecolor="red",
-
-
-    linewidth=1,
+    linewidth=1.4,
     label="予測値(入力長-50)",
 )
+plt.grid(True)
 plt.legend()
-fig.savefig(f"./measurement/fig/m-c-{cource}-o-{out_steps}.svg", bbox_inches="tight")
+fig.savefig(f"./fig/m-c-{cource}-o-{out_steps}.svg", bbox_inches="tight")
 
-print(np.sqrt(np.mean((measure_data[10-out_steps:-out_steps] - measure_data[10:]) ** 2)))
+print(f"スライドしたRMSE{np.sqrt(np.mean((measure_data[10-out_steps:-out_steps] - measure_data[10:]) ** 2))}")
 #print(f"rmse:: {np.sqrt(np.mean((result_2["predict_data"][plot_start+start_50-50-out_steps+1 : plot_start + plot_range - 50-out_steps+1,out_steps-1]-measure_data[plot_start : plot_start + plot_range])**2))}")
 print(result['rmse_arr'])
 print(result_2['rmse_arr'])
+print(f"10の予測時間{in_10_end-in_10_start:.6f}秒")
+print(f"50の予測時間{in_50_end-in_50_start:.6f}秒")
+
 
 plt.show()
+'''
+plt.close("all")
+fig = plt.figure(figsize=(8,3.5))
+plt.rcParams["font.size"] = 10.5
+plt.xlabel("経過時間[s]")
+plt.ylabel("受信電力レベル[dBm]")
+plt.plot(
+    x_plot,
+    measure_data[plot_start : plot_start + plot_range],
+    color="black",
+    alpha=0.5,
+    linewidth=1,
+    label="実測値",
+)
+plt.plot(
+    x_predict_10,
+    measure_data[plot_start-1:plot_start+plot_range-1],
+    color="tab:green",
+    linestyle="-",
+    alpha=0.9,
+
+
+    linewidth=1,
+    label="スライド波形-1ステップ",
+)
+plt.plot(
+    x_predict_10,
+    measure_data[plot_start-3:plot_start+plot_range-3],
+    color="tab:red",
+    linestyle="-",
+    alpha=0.9,
+
+    linewidth=1,
+    label="スライド波形-3ステップ",
+)
+plt.plot(
+    x_predict_10,
+    measure_data[plot_start-5:plot_start+plot_range-5],
+    color="tab:blue",
+    linestyle="-",
+    alpha=0.9,
+
+
+    linewidth=1,
+    label="スライド波形-5ステップ",
+)
+plt.grid(True)
+plt.legend()
+fig.savefig(f"./fig.svg", bbox_inches="tight")
+
+plt.show()
+'''

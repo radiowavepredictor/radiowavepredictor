@@ -7,15 +7,15 @@ from ruamel.yaml import YAML
 
 from simulation.configs.config import SAVE_CFG
 
-MERGE_EXPERIMENT=Path(SAVE_CFG.base_dir) / "simulation-5"#
-MLFLOW_EXPERIMENT="simulation-5-point"
+MERGE_EXPERIMENT= Path("new-simu")
+MLFLOW_EXPERIMENT="new-simu-3"
 
 mlflow.set_experiment(MLFLOW_EXPERIMENT)
 
 for run_dir in MERGE_EXPERIMENT.iterdir():
     yaml=YAML(typ="safe")
     yaml.indent(mapping=2, sequence=4, offset=2)  # インデントの調整
-    with open(run_dir/"data.yaml", "r") as f:
+    with open(run_dir/"artifacts"/"data.yaml", "r") as f:
         data=yaml.load(f)
 
 

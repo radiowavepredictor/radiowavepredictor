@@ -4,32 +4,34 @@ import matplotlib.pyplot as plt
 import japanize_matplotlib
 import joblib
 from keras.models import load_model
+import time
 
+from test import read_csv
 from common.function.function import predict
 from common.schema import RnnConfig
 from common.registory import RNNType,OptimizerType
 
-run_id_in_10="9d2e98406e2c4be691506074be59b35c"
-run_id_in_50="7e535f1789bb481783352f70251f8c0d"
+run_id_in_10="c7c49232eae64f018b74b3814277c998"
+run_id_in_50="006cef4cfc534a93a6173cbbe5885061"
 
-out_steps=1
-dataset_num=16
-plot_start=100
-plot_range=50
+out_steps=5
+dataset_num=100
+plot_start=2000
+plot_range=400
 
 def search_mlflow(run_id):
     # run_idで作ったmodelを探す
     from mlflow.tracking import MlflowClient
 
     client = MlflowClient()
-    #model_path = client.download_artifacts(run_id, "artifacts/model.keras")
-    model_path = client.download_artifacts(run_id, "model.keras")
-    #scaler_path = client.download_artifacts(run_id,"artifacts/scaler.pkl")
-    scaler_path = client.download_artifacts(run_id,"scaler.pkl")
-    #true_path=client.download_artifacts(run_id,"artifacts/true.npy")
-    true_path=client.download_artifacts(run_id,"true.npy")
-    #predicted_path=client.download_artifacts(run_id,"artifacts/predicted.npy")
-    predicted_path=client.download_artifacts(run_id,"predicted.npy")
+    model_path = client.download_artifacts(run_id, "artifacts/model.keras")
+    #model_path = client.download_artifacts(run_id, "model.keras")
+    scaler_path = client.download_artifacts(run_id,"artifacts/scaler.pkl")
+    #scaler_path = client.download_artifacts(run_id,"scaler.pkl")
+    true_path=client.download_artifacts(run_id,"artifacts/true.npy")
+    #true_path=client.download_artifacts(run_id,"true.npy")
+    predicted_path=client.download_artifacts(run_id,"artifacts/predicted.npy")
+    #predicted_path=client.download_artifacts(run_id,"predicted.npy")
 
     model = load_model(model_path)
     scaler=joblib.load(scaler_path)
@@ -43,10 +45,12 @@ model_in_50,scaler2,true2,predict2=search_mlflow(run_id_in_50)
 print("\n\n")
 print("########予測の実行結果########")
 
-simu_data=np.load("power_db.npy")
+#simu_data=np.load("power_db.npy")
+simu_data=read_csv(0)
 print(simu_data)
 simu_data=simu_data.reshape(-1,1)
 
+start_10_time=time.time()
 result=predict(
     model_in_10,
     simu_data,
@@ -66,6 +70,8 @@ result=predict(
     0,
     100
 )
+end_10=time.time()
+start_50_time=time.time()
 result_2=predict(
     model_in_50,
     simu_data,
@@ -85,6 +91,7 @@ result_2=predict(
     0,
     100
 )
+end_50=time.time()
 dt=0.05
 plt.close("all")
 x_true_data = np.linspace(
@@ -105,33 +112,30 @@ x_predict_50=np.linspace(
 
 fig = plt.figure(figsize=(8,3.5))
 plt.xlabel("経過時間[s]")
-plt.ylabel("受信電力レベル[dBm]")
+plt.ylabel("受信電力レベル[dB]")
 plt.plot(
     x_true_data,
     simu_data[plot_start : plot_start + plot_range],
     color="black",
     alpha=0.5,
-    linewidth=1,
-    marker="o",        
-    markersize=3,
+    linewidth=1.3,
+    marker="o",
+    markersize=3.6,
     markerfacecolor="black",
     markeredgecolor="black",
-
     label="実測値",
+
 )
 plt.plot(
     x_predict_10,
     result["predict_data"][plot_start + start_10 -10-out_steps+1 : plot_start + plot_range-10-out_steps+1,out_steps-1],
     color="tab:green",
-    linestyle="-",
+    linestyle="--",
+    linewidth=1.3,
     alpha=0.9,
-    marker="o",        
-    markersize=3,
-    markerfacecolor="green",
-    markeredgecolor="green",
 
 
-    linewidth=1,
+
     label="予測値(入力長-10)",
 )
 
@@ -139,23 +143,21 @@ plt.plot(
     x_predict_50,
     result_2["predict_data"][plot_start+start_50-50-out_steps+1 : plot_start + plot_range - 50-out_steps+1,out_steps-1],
     color="tab:red",
-    linestyle="-",
-    alpha=0.8,
-    marker="o",        
-    markersize=3,
-    markerfacecolor="red",
-    markeredgecolor="red",
+    linestyle="--",
+    linewidth=1.3,
+    alpha=0.9,
 
-
-    linewidth=1,
     label="予測値(入力長-50)",
 )
+plt.grid(True)
 plt.legend()
-fig.savefig(f"./measurement/fig/s-n-{dataset_num}-o-{out_steps}.svg", bbox_inches="tight")
+fig.savefig(f"./fig/s-n-{dataset_num}-o-{out_steps}.svg", bbox_inches="tight")
 
-print(np.sqrt(np.mean((simu_data[10-out_steps:-out_steps] - simu_data[10:]) ** 2)))
-print(f"rmse:: {np.sqrt(np.mean((result_2["predict_data"][plot_start+start_50-50-out_steps+1 : plot_start + plot_range - 50-out_steps+1,out_steps-1]-simu_data[plot_start : plot_start + plot_range])**2))}")
+print(f"データをスライドしただけのRMSE{np.sqrt(np.mean((simu_data[10-out_steps:-out_steps] - simu_data[10:]) ** 2))}")
+#print(f"rmse:: {np.sqrt(np.mean((result_2["predict_data"][plot_start+start_50-50-out_steps+1 : plot_start + plot_range - 50-out_steps+1,out_steps-1]-simu_data[plot_start : plot_start + plot_range])**2))}")
 print(result['rmse_arr'])
 print(result_2['rmse_arr'])
+print(f"10の予測時間{end_10-start_10_time:.6f}秒")
+print(f"50の予測時間{end_50-start_50_time:.6f}秒")
 
 plt.show()

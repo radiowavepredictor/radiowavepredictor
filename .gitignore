@@ -4,6 +4,7 @@ __pychache__/
 *.h5
 *.keras
 *.pkl
+test*
 
 predict_all.py
 
@@ -17,3 +18,8 @@ simu_waves/
 exp_runs/
 mlruns/
 mlflow.db
+fig*
+fig/*
+measurement/fig/*
+memo*
+new-simu-3/*

@@ -89,7 +89,7 @@ def predict(model, data:np.ndarray,scaler:StandardScaler, rnn_cfg:RnnConfig, plo
         norm_data,
         targets=None,
         sequence_length=rnn_cfg.input_len,
-        batch_size=32,
+        batch_size=1,
         shuffle=False,
     )
 

@@ -1,5 +1,9 @@
 {
     "files.exclude": {
         "**/__pycache__": true
-    }
+    },
+    "editor.renderValidationDecorations": "off",
+    "editor.glyphMargin": false,
+    "editor.codeLens": false,
+    "editor.lightbulb.enabled": false
 }
