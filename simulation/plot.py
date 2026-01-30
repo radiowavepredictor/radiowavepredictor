@@ -7,7 +7,7 @@ from keras.models import load_model
 import time
 
 from test import read_csv
-from common.function.function import predict
+from common.function.model import predict
 from common.schema import RnnConfig
 from common.registory import RNNType,OptimizerType
 
