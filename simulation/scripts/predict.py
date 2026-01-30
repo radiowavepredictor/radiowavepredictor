@@ -3,6 +3,7 @@
 import matplotlib.pyplot as plt
 from keras.models import load_model
 import joblib
+from pathlib import Path
 
 from simulation.configs.config import RNN_CFG, SAVE_CFG, SIMULATION_CFG
 from simulation.function import evaluate_model, wrap_save_predict_data
@@ -19,8 +20,8 @@ if SAVE_CFG.use_mlflow:
     model_path = client.download_artifacts(run_id, "model.keras")
     scaler_path = client.download_artifacts(run_id,"scaler.pkl")
 else:
-    model_path = f"./{SAVE_CFG.save_dir}/model.keras"
-    scaler_path =f"./{SAVE_CFG.save_dir}/scaler.pkl"
+    model_path = Path(".")/f"{SAVE_CFG.save_dir}"/"model.keras"
+    scaler_path =Path(".")/f"{SAVE_CFG.save_dir}"/"scaler.pkl"
 
 model = load_model(model_path)
 scaler = joblib.load(scaler_path)

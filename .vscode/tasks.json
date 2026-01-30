@@ -4,7 +4,7 @@
     {
       "label": "Run Current Python File",
       "type": "shell",
-      "command": "C:/Users/kamag/anaconda3/python.exe",
+      "command": "C:/Users/Owner/anaconda3/envs/Py_3_10/python.exe",
       "args": [
         "${file}"
       ],

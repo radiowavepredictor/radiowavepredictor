@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import joblib
 from keras.models import load_model
+from pathlib import Path
 
 from common.function.function import predict
 from common.function.save import save_predict_data
@@ -20,8 +21,8 @@ if SAVE_CFG.use_mlflow:
     model_path = client.download_artifacts(run_id, "model.keras")
     scaler_path = client.download_artifacts(run_id,"scaler.pkl")
 else:
-    model_path = f"./{SAVE_CFG.save_dir}/model.keras"
-    scaler_path =f"./{SAVE_CFG.save_dir}/scaler.pkl"
+    model_path = Path(".")/f"{SAVE_CFG.save_dir}"/"model.keras"
+    scaler_path =Path(".")/f"{SAVE_CFG.save_dir}"/"scaler.pkl"
 
 model = load_model(model_path)
 scaler=joblib.load(scaler_path)
@@ -30,7 +31,7 @@ print("\n\n")
 print("########予測の実行結果########")
 
 print(f"{'時間' if MEASURE_CFG.data_axis=='time' else '距離'}軸で実行します")
-csv_path= f"./measurement/result/WAVE{MEASURE_CFG.cource.predict:04d}/result_n{'t' if MEASURE_CFG.data_axis=='time' else 'd'}-001.csv" 
+csv_path= Path(".")/"measurement"/"result"/f"WAVE{MEASURE_CFG.cource.predict:04d}"/f"result_n{'t' if MEASURE_CFG.data_axis=='time' else 'd'}-001.csv" 
 data_csv = pd.read_csv(csv_path, usecols=["ReceivedPower[dBm]"])
 measure_data = data_csv.values.astype(np.float64) # csv用のデータ構造からnumpy配列に変換
 

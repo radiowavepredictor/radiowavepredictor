@@ -45,7 +45,7 @@ model_in_50,scaler2,true2,predict2=search_mlflow(run_id_in_50)
 print("\n\n")
 print("########予測の実行結果########")
 
-csv_path= f"./measurement/result/WAVE{cource:04d}/result_nt-001.csv" 
+csv_path= Path(".")/"measurement"/"result"/f"WAVE{cource:04d}"/f"result_nt-001.csv" 
 data_csv = pd.read_csv(csv_path, usecols=["ReceivedPower[dBm]"])
 measure_data = data_csv.values.astype(np.float64) # csv用のデータ構造からnumpy配列に変換
 

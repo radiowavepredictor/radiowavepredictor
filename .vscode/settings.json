@@ -5,5 +5,5 @@
     "editor.renderValidationDecorations": "off",
     "editor.glyphMargin": false,
     "editor.codeLens": false,
-    "editor.lightbulb.enabled": false
+    "editor.lightbulb.enabled": "off"
 }

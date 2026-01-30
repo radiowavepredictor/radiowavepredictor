@@ -1,6 +1,6 @@
 measure:
   cource:
-    train: [1,2,4,5,6,7,8,10,11,12,13,14,15,16]
+    train: [1,2,4]
     val: [3,17]
     predict: 16 #予測したいコース番号
   start_ratio: 0 

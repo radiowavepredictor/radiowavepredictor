@@ -1,13 +1,14 @@
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
+from pathlib import Path
 
 from common.schema import RnnConfig
 from common.function.function import array_of_array_to_dataset
 from measurement.configs.schema import MeasureConfig
 
 def read_csv(read_cource, measure_cfg: MeasureConfig):
-    csv_path = f"./measurement/result/WAVE{read_cource:04d}/result_n{'t' if measure_cfg.data_axis=='time' else 'd'}-001.csv"
+    csv_path = Path(".")/"measurement"/"result"/f"WAVE{read_cource:04d}"/f"result_n{'t' if measure_cfg.data_axis=='time' else 'd'}-001.csv"
     csv_data = pd.read_csv(csv_path, usecols=["ReceivedPower[dBm]"])
     csv_data = csv_data.iloc[
         int(len(csv_data) * measure_cfg.start_ratio) : int(
