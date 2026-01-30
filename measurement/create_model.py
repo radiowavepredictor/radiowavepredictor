@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 
-from common.function.function import create_model
+from common.function.model import create_model
 from common.function.save import save_create_data
 from measurement.configs.config import MEASURE_CFG,RNN_CFG,SAVE_CFG
 from measurement.function import load_learning_dataset

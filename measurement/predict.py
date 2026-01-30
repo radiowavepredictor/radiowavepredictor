@@ -5,7 +5,7 @@ import joblib
 from keras.models import load_model
 from pathlib import Path
 
-from common.function.function import predict
+from common.function.model import predict
 from common.function.save import save_predict_data
 from measurement.configs.config import RNN_CFG,SAVE_CFG,MEASURE_CFG
 
