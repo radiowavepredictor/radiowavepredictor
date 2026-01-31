@@ -1,5 +1,5 @@
 simulation:
-  data_num: 1000 #一つのデータセットのデータ数
+  data_num: 800 #一つのデータセットのデータ数
   data_set_num: 8 #作成するデータセットの数(測定におけるコース数)
   l: 30 # 多重波の数
   delta_d: 0.005 #サンプル間隔[m]
@@ -7,18 +7,18 @@ simulation:
   f: 1.298e9  # キャリア周波数 [Hz]
   r: 1  # 反射波の振幅
   k_rice: 4 
-  predicted_dataset_num: 3 # RMSEを出すときにいくつのデータセットを予測して平均値を出すか
+  predicted_dataset_num: 1 # RMSEを出すときにいくつのデータセットを予測して平均値を出すか
 
 model:
   rnn_type: SimpleRNN 
-  optimizer_type: AdamW
+  optimizer_type: Adam
   in_features: 1 #入力特徴量の数(入力するデータが何種類あるか)
-  input_len: 50
-  hidden_nums: [20]
+  input_len: 10
+  hidden_nums: [10]
   out_steps_num: 1 #何点予測するか
-  batch_size: 512
-  epochs: 300
-  learning_rate: 0.0005
+  batch_size: 128
+  epochs: 10
+  learning_rate: 0.001
   patience: 2
 
 save:

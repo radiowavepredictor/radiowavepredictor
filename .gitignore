@@ -6,6 +6,8 @@ __pychache__/
 *.pkl
 test*
 
+.vscode/*
+
 predict_all.py
 
 tuner_result/

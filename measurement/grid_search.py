@@ -1,7 +1,7 @@
 from joblib import Parallel, delayed
 
 from common.schema import RnnConfig,SaveConfig
-from common.function.function import create_model,predict
+from common.function.model import create_model,predict
 from common.function.save import save_create_data,save_predict_data
 from measurement.function import *
 from measurement.configs.schema import MeasureConfig

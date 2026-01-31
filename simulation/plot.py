@@ -11,27 +11,27 @@ from common.function.model import predict
 from common.schema import RnnConfig
 from common.registory import RNNType,OptimizerType
 
-run_id_in_10="c7c49232eae64f018b74b3814277c998"
-run_id_in_50="006cef4cfc534a93a6173cbbe5885061"
+run_id_in_10="fa8fbf7df77847f1807e8148208ed786"
+run_id_in_50="3dbbce37472d4761ab5b540ce633e607"
 
-out_steps=5
-dataset_num=100
-plot_start=2000
-plot_range=400
+out_steps=1
+dataset_num=16
+plot_start=100
+plot_range=50
 
 def search_mlflow(run_id):
     # run_idで作ったmodelを探す
     from mlflow.tracking import MlflowClient
 
     client = MlflowClient()
-    model_path = client.download_artifacts(run_id, "artifacts/model.keras")
-    #model_path = client.download_artifacts(run_id, "model.keras")
-    scaler_path = client.download_artifacts(run_id,"artifacts/scaler.pkl")
-    #scaler_path = client.download_artifacts(run_id,"scaler.pkl")
-    true_path=client.download_artifacts(run_id,"artifacts/true.npy")
-    #true_path=client.download_artifacts(run_id,"true.npy")
-    predicted_path=client.download_artifacts(run_id,"artifacts/predicted.npy")
-    #predicted_path=client.download_artifacts(run_id,"predicted.npy")
+    #model_path = client.download_artifacts(run_id, "artifacts/model.keras")
+    model_path = client.download_artifacts(run_id, "model.keras")
+    #scaler_path = client.download_artifacts(run_id,"artifacts/scaler.pkl")
+    scaler_path = client.download_artifacts(run_id,"scaler.pkl")
+    #true_path=client.download_artifacts(run_id,"artifacts/true.npy")
+    true_path=client.download_artifacts(run_id,"true.npy")
+    #predicted_path=client.download_artifacts(run_id,"artifacts/predicted.npy")
+    predicted_path=client.download_artifacts(run_id,"predicted.npy")
 
     model = load_model(model_path)
     scaler=joblib.load(scaler_path)
@@ -92,21 +92,21 @@ result_2=predict(
     100
 )
 end_50=time.time()
-dt=0.05
+dd=0.005
 plt.close("all")
 x_true_data = np.linspace(
-    plot_start *dt, (plot_start + plot_range) *dt , plot_range
+    plot_start *dd, (plot_start + plot_range) *dd , plot_range
 )
 start_10=(10+out_steps-1-plot_start) if plot_start<10+out_steps-1 else 0
 x_predict_10 = np.linspace(
-    (plot_start +start_10)  *dt,
-    (plot_start + plot_range) *dt,
+    (plot_start +start_10)  *dd,
+    (plot_start + plot_range) *dd,
     plot_range - start_10
 )
 start_50=(50+out_steps-1-plot_start) if plot_start<50+out_steps-1 else 0
 x_predict_50=np.linspace(
-    (plot_start+start_50)*dt,
-    (plot_start+plot_range)*dt,
+    (plot_start+start_50)*dd,
+    (plot_start+plot_range)*dd,
     plot_range-start_50
 )
 

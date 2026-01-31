@@ -5,17 +5,23 @@ import mlflow
 from pathlib import Path
 from ruamel.yaml import YAML
 
-from simulation.configs.config import SAVE_CFG
 
-MERGE_EXPERIMENT= Path("new-simu")
-MLFLOW_EXPERIMENT="new-simu-3"
+MERGE_EXPERIMENT= Path("test")
+MLFLOW_EXPERIMENT="testtesttest"
 
 mlflow.set_experiment(MLFLOW_EXPERIMENT)
 
 for run_dir in MERGE_EXPERIMENT.iterdir():
     yaml=YAML(typ="safe")
     yaml.indent(mapping=2, sequence=4, offset=2)  # インデントの調整
-    with open(run_dir/"artifacts"/"data.yaml", "r") as f:
+    
+    artifacts_dir=run_dir/"artifacts"
+    if artifacts_dir.is_dir():
+        yaml_path=artifacts_dir/"data.yaml"
+    else:
+        yaml_path=run_dir/"data.yaml"
+        
+    with yaml_path.open( "r") as f:
         data=yaml.load(f)
 
 

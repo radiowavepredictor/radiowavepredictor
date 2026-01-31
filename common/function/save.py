@@ -8,8 +8,6 @@ from urllib.parse import unquote,urlparse
 from common.function.function import struct_to_flat_dict,to_yaml_safe
 from common.schema import RnnConfig,SaveConfig
 
-
-
 def save_create_data(
     model,
     scaler,
@@ -94,11 +92,11 @@ def save_predict_data(
     run_id,
     true_data,
     predict_data,
+    predict_time,
     rmse,
     predict_result_fig,
     save_cfg: SaveConfig,
 ):
-
     if save_cfg.use_mlflow:
         import mlflow
 
@@ -112,6 +110,7 @@ def save_predict_data(
                 save_path=artifact_dir
 
             mlflow.log_metric("rmse", rmse)
+            mlflow.log_metric("predict_time",predict_time)
             mlflow.log_figure(predict_result_fig, "predict_results.png")
 
     else:
@@ -120,19 +119,20 @@ def save_predict_data(
         predict_result_fig.savefig(save_path / "predict_results.png")
 
     save_dir=Path(save_path)
-    yaml = YAML(typ="safe")
+    yaml = YAML()
     yaml.indent(mapping=2, sequence=4, offset=2)
+    yaml.default_flow_style = False 
 
     data_yaml_path = save_dir / "data.yaml"
 
     with data_yaml_path.open("r") as f:
         data = yaml.load(f)
-
+        
     data["metrics"]["rmse"] = rmse
+    data["metrics"]["predict_time"] = predict_time
     data = to_yaml_safe(data)
-
+    
     with data_yaml_path.open("w") as f:
         yaml.dump(data, f)
-
     np.save(save_dir / "true.npy", true_data)
     np.save(save_dir / "predicted.npy", predict_data)

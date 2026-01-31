@@ -11,7 +11,6 @@ from keras.utils import timeseries_dataset_from_array
 
 from common.schema import RnnConfig
 
-
 def create_model(
     dataset,
     val_dataset,
@@ -79,8 +78,11 @@ def predict(model, data:np.ndarray,scaler:StandardScaler, rnn_cfg:RnnConfig, plo
         batch_size=1,
         shuffle=False,
     )
-
+    
+    start_time=time.time()
     predicted = model.predict(x, verbose=verbose)
+    end_time=time.time()
+    predict_time=end_time-start_time
     denormalized_predicted = scaler.inverse_transform(predicted)
 
     print(denormalized_predicted.shape)
@@ -126,5 +128,6 @@ def predict(model, data:np.ndarray,scaler:StandardScaler, rnn_cfg:RnnConfig, plo
         "predict_result_figure": predict_result_fig,
         "true_data": data,
         "predict_data": denormalized_predicted,  # ???reshape_denormalized_predictedのほうがいいのかもしれない
+        "predict_time":predict_time
     }
  

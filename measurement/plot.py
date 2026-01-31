@@ -5,8 +5,9 @@ import japanize_matplotlib
 import joblib
 from keras.models import load_model
 import time
+from pathlib import Path
 
-from common.function.function import predict
+from common.function.model import predict
 from common.schema import RnnConfig
 from common.registory import RNNType,OptimizerType
 

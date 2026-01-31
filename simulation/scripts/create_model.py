@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+from pathlib import Path
 
 from common.function.model import create_model
 from common.function.save import save_create_data
@@ -26,7 +27,7 @@ run_id=save_create_data(
     SAVE_CFG
 )
 
-with open("./simulation/scripts/run_id.txt","w") as f:
+with open(Path("simulation")/"scripts"/"run_id.txt","w") as f:
     f.write(run_id)
     print(f"実行{'id'if SAVE_CFG.use_mlflow else '名'}をrun_id.txtに書き込みました") 
 print(f"実行時間:{result['training_time']:.2f}秒")

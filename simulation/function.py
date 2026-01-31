@@ -1,4 +1,3 @@
-import os
 import numpy as np
 from ruamel.yaml import YAML
 from sklearn.preprocessing import StandardScaler
@@ -6,8 +5,9 @@ from urllib.parse import unquote,urlparse
 from pathlib import Path
 import matplotlib.pyplot as plt
 
-from common.function.function import mw_to_dbm, predict,to_yaml_safe,array_of_array_to_dataset
+from common.function.function import to_yaml_safe,array_of_array_to_dataset
 from common.function.save import save_predict_data
+from common.function.model import predict
 from common.schema import RnnConfig, SaveConfig
 from simulation.configs.schema import SimulationConfig
 
@@ -84,6 +84,7 @@ def load_fading_dataset(simu_cfg: SimulationConfig, rnn_cfg: RnnConfig):
     val_dataset, scaler = generate_fading_dataset(rnn_cfg, val_simu_cfg, scaler)
     return (train_dataset, val_dataset), scaler
 '''
+
 ### シミュレーション用のデータセット(入力と答え)をdata_set_num分用意する関数
 def generate_fading_dataset(
     rnn_cfg:RnnConfig, start,end, scaler: StandardScaler | None = None
@@ -99,7 +100,6 @@ def generate_fading_dataset(
 
     dataset=array_of_array_to_dataset(data_norm_arr,rnn_cfg)
     return dataset, scaler
-
 
 ### シミュレーションデータセットを訓練用、検証用と用意する関数
 def load_fading_dataset(simu_cfg: SimulationConfig, rnn_cfg: RnnConfig):
@@ -205,6 +205,7 @@ def wrap_save_predict_data(
     run_id,
     first_true_data,
     first_predict_data,
+    first_prediict_time,
     first_rmse,
     rmse_mean,
     first_predict_result_fig,
@@ -214,6 +215,7 @@ def wrap_save_predict_data(
         run_id,
         first_true_data,
         first_predict_data,
+        first_prediict_time,
         first_rmse,
         first_predict_result_fig,
         save_cfg,
@@ -235,14 +237,12 @@ def wrap_save_predict_data(
         save_path = save_cfg.save_dir
         
     save_path=Path(save_path)
-    yaml = YAML(typ="safe")
+    yaml = YAML()
     yaml.indent(mapping=2, sequence=4, offset=2)  # インデントの調整
     with open(save_path/"data.yaml", "r") as f:
         data = yaml.load(f)
-
     data["metrics"]["rmse_mean"] = rmse_mean
 
     data = to_yaml_safe(data)
-
     with open(save_path/ "data.yaml", "w") as f:
         yaml.dump(data, f)

@@ -16,11 +16,13 @@ def dbm_to_mw(dbm):
 def mw_to_dbm(mw):
     return 10 * np.log10(mw)
     
-# dataからRNN用のデータセットを生成する関数
-# timeseries_dataset_from_array()と使い分ける
-# make_data_setはnumpy配列を返すので、後から加工しやすい
-# timeseries_dataset_from_arrayはtf.data.Datasetオブジェクトを返すので、prefetchなどtensorflow専用の関数が使える
 def make_dataset(changed_data, input_len):
+    '''
+    dataからRNN用のデータセットを生成する関数
+    timeseries_dataset_from_array()と使い分ける
+    make_data_setはnumpy配列を返すので、後から加工しやすい
+    timeseries_dataset_from_arrayはtf.data.Datasetオブジェクトを返すので、prefetchなどtensorflow専用の関数が使える
+    '''
     data, target = [], []
 
     for i in range(len(changed_data) - input_len):
@@ -91,7 +93,7 @@ def to_yaml_safe(value:dict)->dict:
     else:
         return value
     
-# 辞書型からを最初の(1段目の?)階層で直積する
+# 辞書型を最初の(1段目の?)階層で直積する
 def build_section_grid(section: dict):
     fixed = {}
     grid_keys = []
@@ -132,9 +134,10 @@ def make_target(data,input_len,out_steps_num):
 
 def array_of_array_to_dataset(arr_of_arr,rnn_cfg:RnnConfig):
     """
-    時系列のarray_of_arrayからkerasのmodel.fit()に渡せるようにデータセットを作る
+    時系列のarray_of_arrayからkerasのmodel.fit()に渡せるようにデータセットを作る。
     各行が一つの時系列データであることを想定しているので、データ同士が干渉しないよう、
-    各行ごとにdatasetにして、最後にそれをつなげて1次元にしている
+    各行ごとにdatasetにする。
+    最後に全部つなげて1次元にして返却する。
     """
     # 配列の各行をデータセット化する
     dataset_arr = []
@@ -156,7 +159,7 @@ def array_of_array_to_dataset(arr_of_arr,rnn_cfg:RnnConfig):
         dataset = dataset.concatenate(ds)
         
     dataset = (
-        dataset.shuffle(buffer_size=10000)
+        dataset.shuffle(buffer_size=100000)
         .batch(rnn_cfg.batch_size)
         .prefetch(tf.data.AUTOTUNE)
     )
