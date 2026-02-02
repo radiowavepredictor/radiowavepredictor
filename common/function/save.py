@@ -91,10 +91,10 @@ def save_create_data(
 def save_predict_data(
     run_id,
     true_data,
-    predict_data,
+    predict_data_dict,
     predict_time,
-    rmse,
-    predict_result_fig,
+    rmse_dict,
+    predict_fig_dict,
     save_cfg: SaveConfig,
 ):
     if save_cfg.use_mlflow:
@@ -108,15 +108,20 @@ def save_predict_data(
                     save_path=save_path[1:]
             else:
                 save_path=artifact_dir
-
-            mlflow.log_metric("rmse", rmse)
+            for key,value in rmse_dict.items():
+                mlflow.log_metric(key,value)
             mlflow.log_metric("predict_time",predict_time)
-            mlflow.log_figure(predict_result_fig, "predict_results.png")
+            for key, value in predict_fig_dict.items():
+                mlflow.log_figure(
+                    value,
+                    artifact_file=f"predict_fig/{key}.png"
+                )
 
     else:
         save_path = save_cfg.save_dir
         save_path.mkdir(parents=True, exist_ok=True)
-        predict_result_fig.savefig(save_path / "predict_results.png")
+        for key, value in predict_fig_dict.items():
+            value.savefig(save_path/"predict_fig"/f"{key}.png")
 
     save_dir=Path(save_path)
     yaml = YAML()
@@ -128,11 +133,16 @@ def save_predict_data(
     with data_yaml_path.open("r") as f:
         data = yaml.load(f)
         
-    data["metrics"]["rmse"] = rmse
+    data["metrics"]["rmse"]={}
+    for key,value in rmse_dict.items():
+        data["metrics"]["rmse"][key]=value
+
     data["metrics"]["predict_time"] = predict_time
     data = to_yaml_safe(data)
     
     with data_yaml_path.open("w") as f:
         yaml.dump(data, f)
     np.save(save_dir / "true.npy", true_data)
-    np.save(save_dir / "predicted.npy", predict_data)
+    (save_dir/"predict_data").mkdir(parents=True, exist_ok=True)
+    for key,value in predict_data_dict.items():
+        np.save(save_dir / "predict_data"/ f"{key}.npy",value)

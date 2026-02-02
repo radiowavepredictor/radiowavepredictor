@@ -1,6 +1,6 @@
 from joblib import Parallel, delayed
 
-from common.function.function import create_model
+from common.function.model import create_model
 from common.function.save import save_create_data
 from common.schema import RnnConfig,SaveConfig
 from simulation.function import *
@@ -41,6 +41,7 @@ def run_single_experiment(param):
         run_id,
         first_result["true_data"],
         first_result["predict_data"],
+        first_result["predict_time"],
         first_result["rmse_arr"][rnn_cfg.out_steps_num-1],
         rmse_mean_arr[rnn_cfg.out_steps_num-1],
         first_result["predict_result_figure"],

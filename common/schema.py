@@ -44,4 +44,4 @@ class SaveConfig(BaseModel):
 
     @property
     def save_dir(self) -> Path:
-        return Path(self.base_dir) / self.experiment_name / self.run_name
+        return Path(self.base_dir) / self.experiment_name / self.run_name / "artifacts"

@@ -85,17 +85,27 @@ def predict(model, data:np.ndarray,scaler:StandardScaler, rnn_cfg:RnnConfig, plo
     predict_time=end_time-start_time
     denormalized_predicted = scaler.inverse_transform(predicted)
 
-    print(denormalized_predicted.shape)
-    print(data.shape)
+    predicted_arr=[
+        denormalized_predicted[:-i-1,i].reshape(-1,1)
+        for i in range(rnn_cfg.out_steps_num)
+    ]
+    predict_data_dict = {
+        f"step-{i+1}":value
+        for i,value in enumerate(predicted_arr)
+    }
+    # 予測ステップ数分のrmseをつくる
     rmse_arr = np.array([
         np.sqrt(
-            np.mean((denormalized_predicted[:-i-1,i].reshape(-1,1) - data[rnn_cfg.input_len+i:]) ** 2)
+            np.mean((predicted_arr[i] - data[rnn_cfg.input_len+i:]) ** 2)
         )
         for i in range(rnn_cfg.out_steps_num)
     ])
-    
-    # plotするときに単位を秒にするための処理
-    # ???ここから分かりづらいかも 変数名も処理も分かりやすくしたい
+    rmse_dict = {
+        f"rmse-{i+1}": v
+        for i, v in enumerate(rmse_arr)
+    }
+  
+    # plotするときに単位を距離にするための処理
     x_true_data = np.linspace(
         plot_start / 20, (plot_start + plot_range) / 20, plot_range
     )
@@ -104,30 +114,42 @@ def predict(model, data:np.ndarray,scaler:StandardScaler, rnn_cfg:RnnConfig, plo
         (plot_start + plot_range) / 20,
         plot_range - rnn_cfg.input_len,
     )
+    predict_fig_dict = {}
 
-    predict_result_fig = plt.figure()
-    plt.xlabel("Time[s]")
-    plt.ylabel("ReceivedPower[dBm]")
-    plt.plot(
-        x_true_data,
-        data[plot_start : plot_start + plot_range],
-        color="r",
-        alpha=0.5,
-        label="true_data",
-    )
-    plt.plot(
-        x_predict,
-        denormalized_predicted[plot_start : plot_start + plot_range - rnn_cfg.input_len],
-        color="g",
-        label="predict_data",
-    )
-    plt.legend()
+    for i in range(rnn_cfg.out_steps_num):
+        fig = plt.figure()
+
+        plt.xlabel("Time[s]")
+        plt.ylabel("ReceivedPower[dBm]")
+
+        #true_data
+        plt.plot(
+            x_true_data,
+            data[plot_start : plot_start + plot_range],
+            color="r",
+            alpha=0.5,
+            label="true_data",
+        )
+        #predict_data (iステップ目)
+        plt.plot(
+            x_predict,
+            denormalized_predicted[
+                plot_start : plot_start + plot_range - rnn_cfg.input_len,
+                i
+            ],
+            color="g",
+            label=f"predict_step_{i+1}",
+        )
+
+        plt.legend()
+        plt.title(f"Prediction Step {i+1}")
+
+        predict_fig_dict[f"step-{i+1}"] = fig
 
     return {
-        "rmse_arr": rmse_arr,
-        "predict_result_figure": predict_result_fig,
+        "rmse_dict": rmse_dict,
         "true_data": data,
-        "predict_data": denormalized_predicted,  # ???reshape_denormalized_predictedのほうがいいのかもしれない
+        "predict_data_dict": predict_data_dict,  
+        "predict_figure_dict": predict_fig_dict,
         "predict_time":predict_time
     }
- 

@@ -18,7 +18,7 @@ def mw_to_dbm(mw):
     
 def make_dataset(changed_data, input_len):
     '''
-    dataからRNN用のデータセットを生成する関数
+    データからRNN用のデータセットを生成する関数
     timeseries_dataset_from_array()と使い分ける
     make_data_setはnumpy配列を返すので、後から加工しやすい
     timeseries_dataset_from_arrayはtf.data.Datasetオブジェクトを返すので、prefetchなどtensorflow専用の関数が使える
@@ -99,12 +99,12 @@ def build_section_grid(section: dict):
     grid_keys = []
     grid_values = []
 
-    for k, v in section.items():
-        if isinstance(v, list):
-            grid_keys.append(k)
-            grid_values.append(v)
+    for key, value in section.items():
+        if isinstance(value, list):
+            grid_keys.append(key)
+            grid_values.append(value)
         else:
-            fixed[k] = v
+            fixed[key] = value
 
     # グリッドがない場合も product が回るように
     if not grid_keys:

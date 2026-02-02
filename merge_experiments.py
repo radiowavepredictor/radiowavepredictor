@@ -12,20 +12,17 @@ MLFLOW_EXPERIMENT="testtesttest"
 mlflow.set_experiment(MLFLOW_EXPERIMENT)
 
 for run_dir in MERGE_EXPERIMENT.iterdir():
+    artifacts_dir=run_dir/"artifacts"
+    
     yaml=YAML(typ="safe")
     yaml.indent(mapping=2, sequence=4, offset=2)  # インデントの調整
     
-    artifacts_dir=run_dir/"artifacts"
-    if artifacts_dir.is_dir():
-        yaml_path=artifacts_dir/"data.yaml"
-    else:
-        yaml_path=run_dir/"data.yaml"
-        
+    yaml_path=artifacts_dir/"data.yaml"
     with yaml_path.open( "r") as f:
         data=yaml.load(f)
 
 
-    run_name = data.get("run_name", run_dir.name)
+    run_name = data.get("run_name", None)
     params = data.get("params", {})
     metrics = data.get("metrics", {})
     datetime = data.get("datetime", None)
