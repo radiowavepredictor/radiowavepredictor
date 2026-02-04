@@ -70,6 +70,7 @@ def run_single_experiment(param):
         npys={"true_data":result.true_data,"predict_data":result.predict_data},
         pkls={"scaler":scaler}
     )
+    save.save(save_cfg)
     '''
     save_predict_data(
         run_id,

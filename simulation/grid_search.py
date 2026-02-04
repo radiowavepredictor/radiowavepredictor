@@ -1,7 +1,7 @@
 from joblib import Parallel, delayed
 
 from common.function.model import create_model
-from common.function.save import save_create_data
+from common.function.save_class import SaveClass
 from common.schema.config import RnnConfig,SaveConfig
 from simulation.function import *
 from simulation.configs.schema import SimulationConfig
@@ -22,7 +22,7 @@ def run_single_experiment(param):
         rnn_cfg,
         verbose=0,
     )
-
+    '''
     run_id = save_create_data(
         create_result["model"],
         scaler,
@@ -32,11 +32,33 @@ def run_single_experiment(param):
         rnn_cfg,
         save_cfg,
     )
-
+    '''
     model = create_result["model"]
     
-    first_result,rmse_mean_arr=evaluate_model(model,scaler,simulation_cfg,rnn_cfg,save_cfg)
-    
+    first_result,rmse_mean_dict=evaluate_model(model,scaler,simulation_cfg,rnn_cfg,save_cfg)
+    params={**simulation_cfg.model_dump(),**rnn_cfg.model_dump()}
+    metrics={
+        "train_time":create_result["training_time"],
+        "predict_time":first_result.predict_time,
+        **first_result.rmse,
+        **rmse_mean_dict
+    }
+    figures={
+        "history":create_result['history_figure'],
+        "predict_figure":first_result.predict_figure
+    }
+    npys={"true_data":first_result.true_data,"predict_data":first_result.predict_data}
+    save=SaveClass(
+        model=model,
+        metrics=metrics,
+        params=params,
+        figures=figures,
+        npys=npys,
+        pkls={"scaler":scaler}
+        
+    )
+    save.save(save_cfg)
+    '''
     wrap_save_predict_data(
         run_id,
         first_result["true_data"],
@@ -47,8 +69,7 @@ def run_single_experiment(param):
         first_result["predict_result_figure"],
         save_cfg
     )
-
-    return run_id
+    '''
 
 if __name__ == "__main__":
     print(f"\n\n{len(PARAMS_LIST)}のパラメータの組み合わせを実行します\n常に{N_JOBS}個の処理を並列実行します")

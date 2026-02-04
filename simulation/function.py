@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from collections import Counter
 
 from common.function.func import to_yaml_safe,array_of_array_to_dataset
-from common.function.save import save_predict_data
+from common.function.save_class import SaveClass
 from common.function.model import predict
 from common.schema.config import RnnConfig, SaveConfig
 from simulation.configs.schema import SimulationConfig
@@ -192,6 +192,7 @@ def evaluate_model(
         rmse_mean_dict[f"mean-{key}"] = value/predict_num
     return first_result, rmse_mean_dict
 
+'''
 def wrap_save_predict_data(
     run_id,
     first_true_data,
@@ -239,3 +240,4 @@ def wrap_save_predict_data(
     data = to_yaml_safe(data)
     with open(save_path/ "data.yaml", "w") as f:
         yaml.dump(data, f)
+'''

@@ -17,6 +17,7 @@ params:
     start_ratio: 0
     end_ratio: 1
     data_axis: distance
+    sampling_rate: 0.03925
     
   model:
     rnn_type: SimpleRNN
@@ -24,11 +25,11 @@ params:
     in_features: 1
     input_len: [10,50]
     hidden_nums: 
-      - [48,32]
-    out_steps_num: 5
+      - [20]
+    out_steps_num: 1
     batch_size: 128
     epochs: 300
-    learning_rate: [0.0002]
+    learning_rate: [0.0005]
     patience: 10
   
   save:

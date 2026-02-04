@@ -6,7 +6,8 @@ import joblib
 from pathlib import Path
 
 from simulation.configs.config import RNN_CFG, SAVE_CFG, SIMULATION_CFG
-from simulation.function import evaluate_model, wrap_save_predict_data
+from simulation.function import evaluate_model
+from common.function.save_class import SaveClass
 
 # run_idの取得
 with open(Path("simulation")/"scripts"/"run_id.txt", "r") as f:
@@ -34,6 +35,13 @@ print("########予測の実行結果########")
 # 中で複数回predictしてる
 first_result,rmse_mean_dict=evaluate_model(model,scaler,SIMULATION_CFG,RNN_CFG,save_cfg)
 
+save=SaveClass(
+    metrics={**first_result.rmse,"predict_time":first_result.predict_time,**rmse_mean_dict},
+    figures={"predict_figure":first_result.predict_figure},
+    npys={"true_data":first_result.true_data,"predict_data":first_result.predict_data}
+)
+save.save(save_cfg,run_id)
+'''
 wrap_save_predict_data(
     run_id,
     first_result.true_data,
@@ -44,7 +52,7 @@ wrap_save_predict_data(
     first_result.predict_figure,
     save_cfg,
 )
-
+'''
 print(first_result.rmse)
 print(f"rmse:{rmse_mean_dict}")
 print("##############################")

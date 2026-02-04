@@ -3,9 +3,9 @@ n_jobs: 2
 params:
   simulation:
     data_num: 4000 #一つのデータセットのデータ数
-    data_set_num: 100 #作成するデータセットの数(測定におけるコース数)
+    data_set_num: 16 #作成するデータセットの数(測定におけるコース数)
     l: 30 # 多重波の数
-    delta_d: 0.005 #サンプル間隔[m]
+    delta_d: 0.03925 #サンプル間隔[m]
     c: 3e8  # 光速 [m/s]
     f: 1.298e9  # キャリア周波数 [Hz]
     r: 1  # 反射波の振幅
@@ -18,11 +18,11 @@ params:
     in_features: 1 #入力特徴量の数(入力するデータが何種類あるか)
     input_len: [10,50]
     hidden_nums: 
-      - [64,64]
-    out_steps_num: 3 #何点予測するか
+      - [20]
+    out_steps_num: 1 #何点予測するか
     batch_size: 256
     epochs: 300
-    learning_rate: 0.00007
+    learning_rate: 0.0005
     patience: 10
 
   save:
@@ -31,7 +31,7 @@ params:
     plot_range: 200 #グラフとして表示する範囲
 
     use_mlflow: true #mlflowを使うかどうか(mlflowが使えない環境ではFalseを指定)
-    experiment_name: new-simu-3
+    experiment_name: simu-16-0.03925
 
     base_dir: exp_runs #mlflowを使わないときの保存フォルダ名
 
