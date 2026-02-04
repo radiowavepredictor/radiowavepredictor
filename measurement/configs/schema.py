@@ -15,4 +15,5 @@ class MeasureConfig(BaseModel):
     start_ratio:float
     end_ratio:float
     data_axis:Literal["time","distance"]
+    sampling_rate:float
 

@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 
 from common.function.model import create_model
-from common.function.save import save_create_data
+from common.function.save_class import SaveClass
 from measurement.configs.config import MEASURE_CFG,RNN_CFG,SAVE_CFG
 from measurement.function import load_learning_dataset
 
@@ -18,6 +18,19 @@ result=create_model(
 print("\n\n")
 print("################モデル作成の実行結果################")
 
+params={
+    **MEASURE_CFG.model_dump(), #辞書型に変換
+    **RNN_CFG.model_dump()
+}
+save=SaveClass(
+    model=result['model'],
+    params=params,
+    metrics={"train_time":result["training_time"]},
+    figures={"history":result['history_figure']},
+    pkls={"scaler":scaler}
+)
+run_id=save.save(SAVE_CFG)
+'''
 run_id=save_create_data(
     result['model'],
     scaler,
@@ -27,7 +40,7 @@ run_id=save_create_data(
     RNN_CFG,
     SAVE_CFG
 )
-
+'''
 with open(Path("measurement")/"scripts"/"run_id.txt","w") as f:
     f.write(run_id)
     print(f"実行{'id' if SAVE_CFG.use_mlflow else '名'}をrun_id.txtに書き込みました")

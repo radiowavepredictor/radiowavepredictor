@@ -4,11 +4,12 @@ from sklearn.preprocessing import StandardScaler
 from urllib.parse import unquote,urlparse
 from pathlib import Path
 import matplotlib.pyplot as plt
+from collections import Counter
 
-from common.function.function import to_yaml_safe,array_of_array_to_dataset
+from common.function.func import to_yaml_safe,array_of_array_to_dataset
 from common.function.save import save_predict_data
 from common.function.model import predict
-from common.schema import RnnConfig, SaveConfig
+from common.schema.config import RnnConfig, SaveConfig
 from simulation.configs.schema import SimulationConfig
 
 def calc_fading(simu_cfg: SimulationConfig,seed=42):
@@ -167,26 +168,11 @@ def evaluate_model(
     save_cfg: SaveConfig,
 ):
     from test import read_csv
-    # 中上ライスのデータを取得(kerasモデルに渡せるように加工されていない状態)
-    power_db = read_csv(0)
-
-    # predict関数の中でkerasモデルに渡せるように加工したり正規化などをしている
-    # ???create_model関数には加工してからデータを渡すのに、predict関数には加工前のデータを渡してるの変じゃない?
-    first_result = predict(
-        model,
-        power_db,
-        scaler,
-        rnn_cfg,
-        save_cfg.plot_start,
-        save_cfg.plot_range,
-    )
     
-    rmse_sum = np.copy(first_result["rmse_arr"])
-    print(first_result["rmse_arr"])
     predict_num = simu_cfg.predicted_dataset_num
-
-    for i in range(predict_num - 1):  # ↑で一回実行してるのでその分減らす
-        power_db = read_csv(i+1)
+    rmse_sum=Counter({})
+    for i in range(predict_num):  
+        power_db = read_csv(i)
         plt.close("all")
         result_i = predict(
             model,
@@ -195,11 +181,16 @@ def evaluate_model(
             rnn_cfg,
             save_cfg.plot_start,
             save_cfg.plot_range,
+            simu_cfg.delta_d
         )
-        rmse_sum += result_i["rmse_arr"]
+        if i==0:
+            first_result=result_i
+        rmse_sum+=Counter(result_i.rmse)
 
-    rmse_mean_arr = rmse_sum / predict_num
-    return first_result, rmse_mean_arr
+    rmse_mean_dict={}
+    for key,value in rmse_sum.items():
+        rmse_mean_dict[f"mean-{key}"] = value/predict_num
+    return first_result, rmse_mean_dict
 
 def wrap_save_predict_data(
     run_id,
@@ -232,7 +223,8 @@ def wrap_save_predict_data(
             else:
                 save_path=artifact_dir
 
-            mlflow.log_metric("rmse_mean", rmse_mean)
+            for key,value in rmse_mean.items():
+                mlflow.log_metric(key,value)
     else:
         save_path = save_cfg.save_dir
         
@@ -241,7 +233,8 @@ def wrap_save_predict_data(
     yaml.indent(mapping=2, sequence=4, offset=2)  # インデントの調整
     with open(save_path/"data.yaml", "r") as f:
         data = yaml.load(f)
-    data["metrics"]["rmse_mean"] = rmse_mean
+    for key,value in rmse_mean.items(): 
+        data["metrics"]["rmse"][key] = value
 
     data = to_yaml_safe(data)
     with open(save_path/ "data.yaml", "w") as f:

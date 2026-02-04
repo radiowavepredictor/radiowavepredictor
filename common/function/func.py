@@ -8,7 +8,7 @@ from copy import deepcopy
 from keras.utils import timeseries_dataset_from_array
 import tensorflow as tf
 
-from common.schema import RnnConfig
+from common.schema.config import RnnConfig
 
 def dbm_to_mw(dbm):
     return 10 ** (dbm / 10)
@@ -34,17 +34,17 @@ def make_dataset(changed_data, input_len):
     re_target = np.array(target).reshape(len(data), 1)
 
     return (re_data, re_target)
-    
-# 構造体を辞書型に変換してflatにして返す Enumがあった場合は文字列に変換する
+'''    
+# 構造体または辞書型をflatな辞書型に変換して返す Enumがあった場合は文字列に変換する
 def struct_to_flat_dict(obj)->dict:
     if isinstance(obj,dict):
-        return obj
+        dict_=obj
     if is_dataclass(obj): #???多分他の構造体もあるから汎用的なものを探すかどれかに絞ったほうがいい
         dict_=asdict(obj) #type:ignore[arg--type]
     elif isinstance(obj,BaseModel):
         dict_=obj.model_dump()
     else:
-        raise TypeError("dataclassまたはBaseModel以外の値が入っています")
+        raise TypeError("dataclass、BaseModel、または辞書以外の値が入っています")
 
     result={}
     def walk_(d):
@@ -56,7 +56,24 @@ def struct_to_flat_dict(obj)->dict:
 
     walk_(dict_)
     return result
+'''
+# ネストした辞書型を1次元にする
+def flatten_dict(d: dict, sep: str = "/") -> dict:
+    result = {}
 
+    def walk(current: dict, prefix: str = ""):
+        for k, v in current.items():
+            new_key = f"{prefix}{sep}{k}" if prefix else str(k)
+            if isinstance(v, dict):
+                walk(v, new_key)
+            else:
+                if new_key in result:
+                    raise KeyError(f"Duplicate key detected: {new_key}")
+                result[new_key] = v
+
+    walk(d)
+    return result
+    
 def to_yaml_safe(value:dict)->dict:
     """
     入れ子の構造を再帰的に走査し、YAMLに渡せる型に変換する
@@ -165,3 +182,27 @@ def array_of_array_to_dataset(arr_of_arr,rnn_cfg:RnnConfig):
     )
 
     return dataset
+
+# 予測波形、予測元波形を同時にplotするときの、予測波形のplot設定を行う関数
+def predict_plot_setting(input_len,sampling_rate,base_plot_start,base_plot_range,out_steps_num):
+    # 予測波形を基準での順番と、予測元波形を基準での順番があるので注意
+    # ↑のときは接頭辞をpr,     ↑のときは接頭辞無し にする
+    predict_start = input_len+out_steps_num-1 # 予測波形は予測元波形のどこから予測を開始してるか
+    
+    plot_is_before_predict=base_plot_start<predict_start
+
+    if plot_is_before_predict:
+        predict_plot_range = base_plot_range - (predict_start-base_plot_start)
+        pr_predict_index_start = 0
+        predict_plot_start = predict_start 
+    else:
+        predict_plot_range =base_plot_range
+        pr_predict_index_start = base_plot_start-predict_start
+        predict_plot_start = base_plot_start
+ 
+    # 予測データの何番目から何番目までのデータを使うか
+    pr_predict_index=slice(pr_predict_index_start,pr_predict_index_start+predict_plot_range,1)
+    # 予測データをplotするときのx軸の表示範囲の計算
+    x_arange = np.arange(predict_plot_start, predict_plot_start+predict_plot_range) * sampling_rate
+    
+    return x_arange,pr_predict_index

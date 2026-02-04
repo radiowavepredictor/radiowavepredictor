@@ -8,7 +8,7 @@ import time
 from pathlib import Path
 
 from common.function.model import predict
-from common.schema import RnnConfig
+from common.schema.config import RnnConfig
 from common.registory import RNNType,OptimizerType
 
 run_id_in_10="b31f5cc48ac147c0844890b94d145e55"
@@ -124,7 +124,7 @@ plt.plot(
 )
 plt.plot(
     x_predict_10,
-    result["predict_data"][plot_start + start_10 -10-out_steps+1 : plot_start + plot_range-10-out_steps+1,out_steps-1],
+    result["predict_data_dict"]["step-5"][plot_start + start_10 -10-out_steps+1 : plot_start + plot_range-10-out_steps+1],
     color="tab:green",
     linestyle="--",
     alpha=0.9,
@@ -140,7 +140,7 @@ plt.plot(
 
 plt.plot(
     x_predict_50,
-    result_2["predict_data"][plot_start+start_50-50-out_steps+1 : plot_start + plot_range - 50-out_steps+1,out_steps-1],
+    result_2["predict_data_dict"]["step-5"][plot_start+start_50-50-out_steps+1 : plot_start + plot_range - 50-out_steps+1],
     color="tab:red",
     linestyle="--",
     alpha=0.9,
@@ -153,12 +153,12 @@ plt.plot(
 )
 plt.grid(True)
 plt.legend()
-fig.savefig(f"./fig/m-c-{cource}-o-{out_steps}.svg", bbox_inches="tight")
+fig.savefig(Path("fig")/f"m-c-{cource}-o-{out_steps}.svg", bbox_inches="tight")
 
 print(f"スライドしたRMSE{np.sqrt(np.mean((measure_data[10-out_steps:-out_steps] - measure_data[10:]) ** 2))}")
 #print(f"rmse:: {np.sqrt(np.mean((result_2["predict_data"][plot_start+start_50-50-out_steps+1 : plot_start + plot_range - 50-out_steps+1,out_steps-1]-measure_data[plot_start : plot_start + plot_range])**2))}")
-print(result['rmse_arr'])
-print(result_2['rmse_arr'])
+print(result['rmse_dict'])
+print(result_2['rmse_dict'])
 print(f"10の予測時間{in_10_end-in_10_start:.6f}秒")
 print(f"50の予測時間{in_50_end-in_50_start:.6f}秒")
 

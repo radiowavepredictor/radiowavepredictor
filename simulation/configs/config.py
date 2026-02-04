@@ -1,7 +1,7 @@
 # ===== このファイルでyamlをpython用に変換する =====
 from ruamel.yaml import YAML
 
-from common.schema import RnnConfig,SaveConfig
+from common.schema.config import RnnConfig,SaveConfig
 from simulation.configs.schema import SimulationConfig
 
 yaml=YAML(typ="safe")

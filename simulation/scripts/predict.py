@@ -32,21 +32,21 @@ print("\n\n")
 print("########予測の実行結果########")
 
 # 中で複数回predictしてる
-first_result,rmse_mean_arr=evaluate_model(model,scaler,SIMULATION_CFG,RNN_CFG,save_cfg)
+first_result,rmse_mean_dict=evaluate_model(model,scaler,SIMULATION_CFG,RNN_CFG,save_cfg)
 
 wrap_save_predict_data(
     run_id,
-    first_result["true_data"],
-    first_result["predict_data"],
-    first_result["predict_time"],
-    first_result["rmse_arr"][RNN_CFG.out_steps_num-1],
-    rmse_mean_arr[RNN_CFG.out_steps_num-1],
-    first_result["predict_result_figure"],
+    first_result.true_data,
+    first_result.predict_data,
+    first_result.predict_time,
+    first_result.rmse,
+    rmse_mean_dict,
+    first_result.predict_figure,
     save_cfg,
 )
 
-print(f"rmse:{rmse_mean_arr}")
-print(f"rmseの平均:{rmse_mean_arr[RNN_CFG.out_steps_num-1]:.2f}")
+print(first_result.rmse)
+print(f"rmse:{rmse_mean_dict}")
 print("##############################")
 
 plt.show()

@@ -1,14 +1,13 @@
-import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import japanize_matplotlib
+import japanize_matplotlib # importするだけで意味があるので消さない
 import joblib
 from keras.models import load_model
 import time
 
 from test import read_csv
 from common.function.model import predict
-from common.schema import RnnConfig
+from common.schema.config import RnnConfig
 from common.registory import RNNType,OptimizerType
 
 run_id_in_10="fa8fbf7df77847f1807e8148208ed786"
@@ -128,7 +127,7 @@ plt.plot(
 )
 plt.plot(
     x_predict_10,
-    result["predict_data"][plot_start + start_10 -10-out_steps+1 : plot_start + plot_range-10-out_steps+1,out_steps-1],
+    result["predict_data_arr"][plot_start + start_10 -10-out_steps+1 : plot_start + plot_range-10-out_steps+1,out_steps-1],
     color="tab:green",
     linestyle="--",
     linewidth=1.3,

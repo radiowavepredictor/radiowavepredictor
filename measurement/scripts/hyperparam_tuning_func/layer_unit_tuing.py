@@ -3,7 +3,7 @@ from keras_tuner.tuners import Hyperband
 from keras.callbacks import EarlyStopping
 
 from measurement.setting import *
-from common.function.function import load_training_data
+from common.function.func import load_training_data
 from hyperparam_tuning.build_model import RNNHyperModel
 
 def layer_unit_tuning():

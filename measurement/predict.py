@@ -6,7 +6,7 @@ from keras.models import load_model
 from pathlib import Path
 
 from common.function.model import predict
-from common.function.save import save_predict_data
+from common.function.save_class import SaveClass
 from measurement.configs.config import RNN_CFG,SAVE_CFG,MEASURE_CFG
 
 # run_idの取得
@@ -42,21 +42,28 @@ result=predict(
     RNN_CFG,
     SAVE_CFG.plot_start,
     SAVE_CFG.plot_range,
+    MEASURE_CFG.sampling_rate
 )
 
-print(result["predict_data_dict"])
+print(result.predict_data)
 
-
+save=SaveClass(
+    metrics={**result.rmse,"predict_time":result.predict_time},
+    figures={"predict_figure":result.predict_figure},
+    npys={"true_data":result.true_data,"predict_data":result.predict_data}
+)
+save.save(SAVE_CFG,run_id)
+'''
 save_predict_data(
     run_id,
-    result["true_data"],
-    result["predict_data_dict"],
-    result["predict_time"],
-    result["rmse_dict"],
-    result["predict_figure_dict"],
+    result.true_data,
+    result.predict_data,
+    result.predict_time,
+    result.rmse,
+    result.predict_figure,
     SAVE_CFG
 )
-
-print(f"rmse:{result['rmse_dict']}")
+'''
+print(f"rmse:{result.rmse}")
 print("##############################")
 plt.show()

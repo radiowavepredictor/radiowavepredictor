@@ -3,8 +3,8 @@ import pandas as pd
 from sklearn.preprocessing import StandardScaler
 from pathlib import Path
 
-from common.schema import RnnConfig
-from common.function.function import array_of_array_to_dataset
+from common.schema.config import RnnConfig
+from common.function.func import array_of_array_to_dataset
 from measurement.configs.schema import MeasureConfig
 
 def read_csv(read_cource, measure_cfg: MeasureConfig):

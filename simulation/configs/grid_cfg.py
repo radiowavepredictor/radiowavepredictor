@@ -3,8 +3,8 @@ from itertools import product
 
 from itertools import product
 
-from common.function.function import build_section_grid
-from common.schema import RnnConfig,SaveConfig
+from common.function.func import build_section_grid
+from common.schema.config import RnnConfig,SaveConfig
 from simulation.configs.schema import SimulationConfig
 
 yaml=YAML(typ="safe")

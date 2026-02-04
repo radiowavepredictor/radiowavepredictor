@@ -2,7 +2,7 @@ from joblib import Parallel, delayed
 
 from common.function.model import create_model
 from common.function.save import save_create_data
-from common.schema import RnnConfig,SaveConfig
+from common.schema.config import RnnConfig,SaveConfig
 from simulation.function import *
 from simulation.configs.schema import SimulationConfig
 from simulation.configs.grid_cfg import PARAMS_LIST,N_JOBS

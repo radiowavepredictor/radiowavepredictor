@@ -5,9 +5,9 @@ from datetime import datetime
 from pathlib import Path
 from urllib.parse import unquote,urlparse
 
-from common.function.function import struct_to_flat_dict,to_yaml_safe
-from common.schema import RnnConfig,SaveConfig
-
+#from common.function.func import struct_to_flat_dict,to_yaml_safe
+from common.schema.config import RnnConfig,SaveConfig
+'''
 def save_create_data(
     model,
     scaler,
@@ -87,7 +87,36 @@ def save_create_data(
     model.save(save_dir / "model.keras")
 
     return run_id
+'''
+'''
 
+
+            
+def save_predict_data(
+    run_id,
+    metrics,
+    npys,
+    pkls,
+    figures,
+    save_cfg
+):
+    if save_cfg.use_mlflow:
+        import mlflow
+
+        with mlflow.start_run(run_id):
+            artifact_dir = mlflow.get_artifact_uri()
+            if artifact_dir.startswith("file:"):
+                save_path=unquote(urlparse(artifact_dir).path)
+                if len(save_path)>=3 and save_path[0]=="/" and save_path[2]==":":
+                    save_path=save_path[1:]
+            else:
+                save_path=artifact_dir
+            for key,value in metrics.items():
+                mlflow.log_metric(key,value)
+  
+
+'''
+'''
 def save_predict_data(
     run_id,
     true_data,
@@ -146,3 +175,4 @@ def save_predict_data(
     (save_dir/"predict_data").mkdir(parents=True, exist_ok=True)
     for key,value in predict_data_dict.items():
         np.save(save_dir / "predict_data"/ f"{key}.npy",value)
+'''

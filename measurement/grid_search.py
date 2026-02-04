@@ -1,8 +1,8 @@
 from joblib import Parallel, delayed
 
-from common.schema import RnnConfig,SaveConfig
+from common.schema.config import RnnConfig,SaveConfig
 from common.function.model import create_model,predict
-from common.function.save import save_create_data,save_predict_data
+from common.function.save_class import SaveClass
 from measurement.function import *
 from measurement.configs.schema import MeasureConfig
 from measurement.configs.grid_cfg import PARAMS_LIST,N_JOBS
@@ -22,7 +22,7 @@ def run_single_experiment(param):
         rnn_cfg,
         verbose=0,
     )
-
+    '''
     run_id = save_create_data(
         create_result["model"],
         scaler,
@@ -32,10 +32,11 @@ def run_single_experiment(param):
         rnn_cfg,
         save_cfg,
     )
+    '''
 
     model = create_result["model"]
     
-    csv_path= Path(".")/"measurement"/"result"/f"WAVE{measure_cfg.cource.predict:04d}"/f"result_n{'t' if measure_cfg.data_axis=='time' else 'd'}-001.csv" 
+    csv_path= Path("measurement")/"result"/f"WAVE{measure_cfg.cource.predict:04d}"/f"result_n{'t' if measure_cfg.data_axis=='time' else 'd'}-001.csv" 
     data_csv = pd.read_csv(csv_path, usecols=["ReceivedPower[dBm]"])
     measure_data = data_csv.values.astype(np.float64) # csv用のデータ構造からnumpy配列に変換
 
@@ -46,8 +47,30 @@ def run_single_experiment(param):
         rnn_cfg,
         save_cfg.plot_start,
         save_cfg.plot_range,
+        measure_cfg.sampling_rate
     )
-    
+    params={
+        **measure_cfg.model_dump(), #辞書型に変換
+        **rnn_cfg.model_dump()
+    }
+    metrics={
+        "train_time":create_result["training_time"],
+        "predict_time":result.predict_time,
+        **result.rmse
+    }
+    figures={
+        "history":create_result["history_figure"],
+        "predict_figure":result.predict_figure
+    }
+    save=SaveClass(
+        model=model,
+        params=params,
+        metrics=metrics,
+        figures=figures,
+        npys={"true_data":result.true_data,"predict_data":result.predict_data},
+        pkls={"scaler":scaler}
+    )
+    '''
     save_predict_data(
         run_id,
         result["true_data"],
@@ -56,8 +79,7 @@ def run_single_experiment(param):
         result["predict_result_figure"],
         save_cfg,
     )
-
-    return run_id
+    '''
 
 if __name__ == "__main__":
     print(f"\n\n{len(PARAMS_LIST)}のパラメータの組み合わせを実行します\n常に{N_JOBS}個の処理を並列実行します")
