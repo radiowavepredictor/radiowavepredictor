@@ -1,3 +1,8 @@
+'''
+YAMLファイルでは、文字列しか扱えないので、
+文字列→classに変換するためのMAP変数
+MAP変数と同じ文字列しか受け取れないようにするために、Enumを用意しています
+'''
 from enum import Enum
 from keras.layers import SimpleRNN,LSTM,GRU
 from keras.optimizers import Adam,AdamW,RMSprop

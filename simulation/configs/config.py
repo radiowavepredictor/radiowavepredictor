@@ -1,11 +1,12 @@
 # ===== このファイルでyamlをpython用に変換する =====
 from ruamel.yaml import YAML
+from pathlib import Path
 
-from common.schema.config import RnnConfig,SaveConfig
-from simulation.configs.schema import SimulationConfig
+from common import RnnConfig,SaveConfig
+from .schema import SimulationConfig
 
 yaml=YAML(typ="safe")
-with open("simulation/configs/config.yaml", encoding="utf-8") as f:
+with open(Path(__file__).parent/"config.yaml", encoding="utf-8") as f:
     cfg = yaml.load(f)
     
 # ===== この設定変数を使っていく =====

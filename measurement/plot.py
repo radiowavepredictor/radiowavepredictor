@@ -1,25 +1,24 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import japanize_matplotlib
+import japanize_matplotlib #インポートするだけで効果あるので、コード内で使われてなくても消さない
 import joblib
 from keras.models import load_model
 import time
 from pathlib import Path
-import sys
 
-from common.function.model import predict
-from common.function.func import predict_plot_setting
-from common.schema.config import RnnConfig
+from common import predict
+from common.utils.func import predict_plot_setting
+from common import RnnConfig
 from common.registory import RNNType,OptimizerType
 
 run_id_in_10="4af1c7c123f246fc8a4c456acd213183"
 run_id_in_50="1ba91c6f92bb4e4c9c10cea245dc6c41"
 
-cource=16
+cource=1
 
 out_steps=1
-plot_start=100
+plot_start=128
 plot_range=50
 sampling_rate=0.03925
 
@@ -49,7 +48,7 @@ if (true!=true2).any():
     print("data違う")
     sys.exit()
 '''
-csv_path= Path("measurement")/"result"/f"WAVE{cource:04d}"/f"result_nt-001.csv" 
+csv_path= Path("result")/f"WAVE{cource:04d}"/f"result_nd-001.csv" 
 data_csv = pd.read_csv(csv_path, usecols=["ReceivedPower[dBm]"])
 measure_data = data_csv.values.astype(np.float64) # csv用のデータ構造からnumpy配列に変換
 in_10_start=time.time()
@@ -102,12 +101,12 @@ plt.close("all")
 x_arange_true = np.arange(plot_start,plot_start+plot_range)*sampling_rate
 # 10サンプル入力の場合
 x_arange_10,predict_index_10 = predict_plot_setting(10,sampling_rate,plot_start,plot_range,out_steps)
-x_arange_50,predict_index_50 = predict_plot_setting(50,sampling_rate,plot_start,plot_range,out_steps)
 # 50サンプル入力の場合
+x_arange_50,predict_index_50 = predict_plot_setting(50,sampling_rate,plot_start,plot_range,out_steps)
 
 fig = plt.figure(figsize=(8,3.5))
 plt.rcParams["font.size"] = 10.5
-plt.xlabel("経過時間[s]")
+plt.xlabel("移動距離[m]")
 plt.ylabel("受信電力レベル[dBm]")
 plt.plot(
     x_arange_true,
@@ -124,7 +123,7 @@ plt.plot(
 )
 plt.plot(
     x_arange_10,
-    predict1[predict_index_10],
+    result.predict_data[f"step-{out_steps}"][predict_index_10],
     color="tab:green",
     linestyle="--",
     alpha=0.9,
@@ -140,7 +139,7 @@ plt.plot(
 
 plt.plot(
     x_arange_50,
-    predict2[predict_index_50],
+    result_2.predict_data[f"step-{out_steps}"][predict_index_50],
     color="tab:red",
     linestyle="--",
     alpha=0.9,
@@ -153,7 +152,7 @@ plt.plot(
 )
 plt.grid(True)
 plt.legend()
-fig.savefig(Path("fig")/f"m-c-{cource}-o-{out_steps}.svg", bbox_inches="tight")
+fig.savefig(Path("fig")/f"v2-m-c-{cource}-o-{out_steps}.svg", bbox_inches="tight")
 
 print(f"スライドしたRMSE{np.sqrt(np.mean((measure_data[10-out_steps:-out_steps] - measure_data[10:]) ** 2))}")
 #print(f"rmse:: {np.sqrt(np.mean((result_2["predict_data"][plot_start+start_50-50-out_steps+1 : plot_start + plot_range - 50-out_steps+1,out_steps-1]-measure_data[plot_start : plot_start + plot_range])**2))}")

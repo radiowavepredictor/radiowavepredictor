@@ -1,13 +1,13 @@
 from ruamel.yaml import YAML
 from itertools import product
+from pathlib import Path
 
-from common.schema.config import RnnConfig,SaveConfig
-from common.function.func import build_section_grid
-from measurement.configs.schema import MeasureConfig
-# ???もっと汎用的なコードにしたほうがいい
+from common import RnnConfig,SaveConfig
+from common.utils.func import build_section_grid
+from .schema import MeasureConfig
 
 yaml=YAML(typ="safe")
-with open("measurement/configs/grid_cfg.yaml", encoding="utf-8") as f:
+with open(Path(__file__).parent/"grid_cfg.yaml", encoding="utf-8") as f:
     cfg = yaml.load(f)
 
 N_JOBS=cfg['n_jobs'] 
@@ -34,7 +34,6 @@ for param in PARAMS_LIST:
     param['measure'] = MeasureConfig(**param['measure']) #type:ignore
     param['model']   = RnnConfig(**param['model']) #type:ignore
     param['save']    = SaveConfig(**param["save"]) #type:ignore
-
 
 print(f"全組み合わせ数: {len(PARAMS_LIST)}")
 print(PARAMS_LIST[0])

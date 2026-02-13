@@ -5,12 +5,12 @@ import joblib
 from keras.models import load_model
 from pathlib import Path
 
-from common.function.model import predict
-from common.function.save_class import SaveClass
-from measurement.configs.config import RNN_CFG,SAVE_CFG,MEASURE_CFG
+from common import predict
+from common import ExperimentsSaver
+from configs.config import RNN_CFG,SAVE_CFG,MEASURE_CFG
 
 # run_idの取得
-with open(Path("measurement")/"scripts"/"run_id.txt", "r") as f:
+with open(Path(__file__).parent/"run_id.txt", "r") as f:
     run_id = f.readline().strip()
 
 # run_idで作ったmodelを探す
@@ -21,8 +21,8 @@ if SAVE_CFG.use_mlflow:
     model_path = client.download_artifacts(run_id, "model.keras")
     scaler_path = client.download_artifacts(run_id,"scaler.pkl")
 else:
-    model_path = Path(f"{SAVE_CFG.save_dir}")/"model.keras"
-    scaler_path =Path(f"{SAVE_CFG.save_dir}")/"scaler.pkl"
+    model_path = Path(f"{SAVE_CFG.artifacts_dir}")/"model.keras"
+    scaler_path =Path(f"{SAVE_CFG.artifacts_dir}")/"scaler.pkl"
 
 model = load_model(model_path)
 scaler=joblib.load(scaler_path)
@@ -47,23 +47,13 @@ result=predict(
 
 print(result.predict_data)
 
-save=SaveClass(
+save=ExperimentsSaver(
     metrics={**result.rmse,"predict_time":result.predict_time},
     figures={"predict_figure":result.predict_figure},
     npys={"true_data":result.true_data,"predict_data":result.predict_data}
 )
 save.save(SAVE_CFG,run_id)
-'''
-save_predict_data(
-    run_id,
-    result.true_data,
-    result.predict_data,
-    result.predict_time,
-    result.rmse,
-    result.predict_figure,
-    SAVE_CFG
-)
-'''
+
 print(f"rmse:{result.rmse}")
 print("##############################")
 plt.show()

@@ -1,11 +1,12 @@
 from joblib import Parallel, delayed
 
-from common.schema.config import RnnConfig,SaveConfig
-from common.function.model import create_model,predict
-from common.function.save_class import SaveClass
-from measurement.function import *
-from measurement.configs.schema import MeasureConfig
-from measurement.configs.grid_cfg import PARAMS_LIST,N_JOBS
+from common import RnnConfig,SaveConfig
+from common import create_model,predict
+from common import ExperimentsSaver
+
+from function import *
+from configs.schema import MeasureConfig
+from configs.grid_cfg import PARAMS_LIST,N_JOBS
 
 def run_single_experiment(param):
     # パラメータ変数を用意する
@@ -14,7 +15,7 @@ def run_single_experiment(param):
     rnn_cfg: RnnConfig = param["model"]
     save_cfg:SaveConfig = param["save"]
 
-    (dataset, val_dataset),scaler = load_learning_dataset(measure_cfg, rnn_cfg)
+    dataset, val_dataset,scaler = make_learning_dataset(measure_cfg, rnn_cfg)
 
     create_result = create_model(
         dataset,
@@ -22,21 +23,10 @@ def run_single_experiment(param):
         rnn_cfg,
         verbose=0,
     )
-    '''
-    run_id = save_create_data(
-        create_result["model"],
-        scaler,
-        create_result["history_figure"],
-        create_result["training_time"],
-        measure_cfg,
-        rnn_cfg,
-        save_cfg,
-    )
-    '''
 
     model = create_result["model"]
     
-    csv_path= Path("measurement")/"result"/f"WAVE{measure_cfg.cource.predict:04d}"/f"result_n{'t' if measure_cfg.data_axis=='time' else 'd'}-001.csv" 
+    csv_path= Path("result")/f"WAVE{measure_cfg.cource.predict:04d}"/f"result_n{'t' if measure_cfg.data_axis=='time' else 'd'}-001.csv" 
     data_csv = pd.read_csv(csv_path, usecols=["ReceivedPower[dBm]"])
     measure_data = data_csv.values.astype(np.float64) # csv用のデータ構造からnumpy配列に変換
 
@@ -62,7 +52,7 @@ def run_single_experiment(param):
         "history":create_result["history_figure"],
         "predict_figure":result.predict_figure
     }
-    save=SaveClass(
+    save=ExperimentsSaver(
         model=model,
         params=params,
         metrics=metrics,
@@ -71,16 +61,6 @@ def run_single_experiment(param):
         pkls={"scaler":scaler}
     )
     save.save(save_cfg)
-    '''
-    save_predict_data(
-        run_id,
-        result["true_data"],
-        result["predict_data"],
-        result["rmse_arr"][rnn_cfg.out_steps_num-1],
-        result["predict_result_figure"],
-        save_cfg,
-    )
-    '''
 
 if __name__ == "__main__":
     print(f"\n\n{len(PARAMS_LIST)}のパラメータの組み合わせを実行します\n常に{N_JOBS}個の処理を並列実行します")

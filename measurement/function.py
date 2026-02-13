@@ -3,12 +3,12 @@ import pandas as pd
 from sklearn.preprocessing import StandardScaler
 from pathlib import Path
 
-from common.schema.config import RnnConfig
-from common.function.func import array_of_array_to_dataset
-from measurement.configs.schema import MeasureConfig
+from common import RnnConfig
+from common.utils.func import array_of_array_to_dataset
+from configs.schema import MeasureConfig
 
 def read_csv(read_cource, measure_cfg: MeasureConfig):
-    csv_path = Path(".")/"measurement"/"result"/f"WAVE{read_cource:04d}"/f"result_n{'t' if measure_cfg.data_axis=='time' else 'd'}-001.csv"
+    csv_path = Path("measurement")/"result"/f"WAVE{read_cource:04d}"/f"result_n{'t' if measure_cfg.data_axis=='time' else 'd'}-001.csv"
     csv_data = pd.read_csv(csv_path, usecols=["ReceivedPower[dBm]"])
     csv_data = csv_data.iloc[
         int(len(csv_data) * measure_cfg.start_ratio) : int(
@@ -55,7 +55,7 @@ def multiple_csv_to_dataset(
 
     return dataset, scaler
 
-def load_learning_dataset(measure_cfg: MeasureConfig, rnn_cfg: RnnConfig):
+def make_learning_dataset(measure_cfg: MeasureConfig, rnn_cfg: RnnConfig):
     train_dataset,scaler=multiple_csv_to_dataset(measure_cfg.cource.train,rnn_cfg,measure_cfg)
     val_dataset,scaler=multiple_csv_to_dataset(measure_cfg.cource.val,rnn_cfg,measure_cfg,scaler)
-    return (train_dataset, val_dataset), scaler
+    return train_dataset, val_dataset, scaler

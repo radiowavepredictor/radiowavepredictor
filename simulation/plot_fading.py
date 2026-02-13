@@ -3,8 +3,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from simulation.function import *
-from simulation.configs.config import SIMULATION_CFG
+from function import *
+from configs.config import SIMULATION_CFG
 
 fading=calc_fading(SIMULATION_CFG)
 

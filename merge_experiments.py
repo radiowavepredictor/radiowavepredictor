@@ -6,8 +6,8 @@ from pathlib import Path
 from ruamel.yaml import YAML
 
 
-MERGE_EXPERIMENT= Path("test")
-MLFLOW_EXPERIMENT="testtesttest"
+MERGE_EXPERIMENT= Path("10")
+MLFLOW_EXPERIMENT="test_merge"
 
 mlflow.set_experiment(MLFLOW_EXPERIMENT)
 
@@ -38,8 +38,5 @@ for run_dir in MERGE_EXPERIMENT.iterdir():
         for key, value in metrics.items():
             mlflow.log_metric(key, float(value))
 
-        if datetime:
-            mlflow.set_tag("datetime", datetime)
+        mlflow.log_artifacts(str(artifacts_dir))
 
-        for item in run_dir.iterdir():
-            mlflow.log_artifact(str(item))

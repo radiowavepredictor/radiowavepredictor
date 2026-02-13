@@ -1,14 +1,14 @@
 from ruamel.yaml import YAML
 from itertools import product
+from pathlib import Path
 
-from itertools import product
+from common.utils.func import build_section_grid
+from common import RnnConfig,SaveConfig
 
-from common.function.func import build_section_grid
-from common.schema.config import RnnConfig,SaveConfig
-from simulation.configs.schema import SimulationConfig
+from schema import SimulationConfig
 
 yaml=YAML(typ="safe")
-with open("simulation/configs/grid_cfg.yaml", encoding="utf-8") as f:
+with open(Path(__file__).parent/"grid_cfg.yaml", encoding="utf-8") as f:
     cfg = yaml.load(f)
 
 N_JOBS=cfg['n_jobs'] 

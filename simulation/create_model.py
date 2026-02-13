@@ -1,12 +1,14 @@
 import matplotlib.pyplot as plt
 from pathlib import Path
+from numpy.random import RandomState
 
-from common.function.model import create_model
-from common.function.save_class import SaveClass
-from simulation.function import load_fading_dataset
-from simulation.configs.config import SIMULATION_CFG,RNN_CFG,SAVE_CFG
+from common import create_model
+from common import ExperimentsSaver
+from function import make_rice_learning_dataset
+from configs.config import SIMULATION_CFG,RNN_CFG,SAVE_CFG
 
-(dataset,val_dataset),scaler=load_fading_dataset(SIMULATION_CFG,RNN_CFG)
+rnd=RandomState(0)
+dataset,val_dataset,scaler=make_rice_learning_dataset(SIMULATION_CFG,RNN_CFG,rnd)
 
 result=create_model(
     dataset,
@@ -17,7 +19,7 @@ result=create_model(
 print("\n\n")
 print("################モデル作成の実行結果################")
 params={**SIMULATION_CFG.model_dump(),**RNN_CFG.model_dump()}
-save=SaveClass(
+save=ExperimentsSaver(
     model=result['model'],
     params=params,
     metrics={"train_time":result["training_time"]},
@@ -25,18 +27,8 @@ save=SaveClass(
     pkls={"scaler":scaler}
 )
 run_id=save.save(SAVE_CFG)
-'''
-run_id=save_create_data(
-    result['model'],
-    scaler,
-    result['history_figure'],
-    result['training_time'],
-    SIMULATION_CFG,
-    RNN_CFG,
-    SAVE_CFG
-)
-'''
-with open(Path("simulation")/"scripts"/"run_id.txt","w") as f:
+
+with open(Path(__file__).parent/"run_id.txt","w") as f:
     f.write(run_id)
     print(f"実行{'id'if SAVE_CFG.use_mlflow else '名'}をrun_id.txtに書き込みました") 
 print(f"実行時間:{result['training_time']:.2f}秒")

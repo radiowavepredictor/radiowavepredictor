@@ -1,11 +1,12 @@
 from joblib import Parallel, delayed
+from numpy.random import RandomState
 
-from common.function.model import create_model
-from common.function.save_class import SaveClass
-from common.schema.config import RnnConfig,SaveConfig
-from simulation.function import *
-from simulation.configs.schema import SimulationConfig
-from simulation.configs.grid_cfg import PARAMS_LIST,N_JOBS
+from common import create_model
+from common import ExperimentsSaver
+from common import RnnConfig,SaveConfig
+from function import make_rice_learning_dataset,predict_multiple_waves
+from configs.schema import SimulationConfig
+from configs.grid_cfg import PARAMS_LIST,N_JOBS
 
 def run_single_experiment(param):
     # パラメータ変数を用意する
@@ -14,7 +15,8 @@ def run_single_experiment(param):
     rnn_cfg: RnnConfig = param["model"]
     save_cfg:SaveConfig=param["save"]
 
-    (dataset, val_dataset), scaler= load_fading_dataset(simulation_cfg, rnn_cfg)
+    rnd = RandomState(0)
+    dataset, val_dataset, scaler= make_rice_learning_dataset(simulation_cfg, rnn_cfg,rnd)
 
     create_result = create_model(
         dataset,
@@ -22,20 +24,10 @@ def run_single_experiment(param):
         rnn_cfg,
         verbose=0,
     )
-    '''
-    run_id = save_create_data(
-        create_result["model"],
-        scaler,
-        create_result["history_figure"],
-        create_result["training_time"],
-        simulation_cfg,
-        rnn_cfg,
-        save_cfg,
-    )
-    '''
+    
     model = create_result["model"]
     
-    first_result,rmse_mean_dict=evaluate_model(model,scaler,simulation_cfg,rnn_cfg,save_cfg)
+    first_result,rmse_mean_dict=predict_multiple_waves(model,scaler,rnd,simulation_cfg,rnn_cfg,save_cfg)
     params={**simulation_cfg.model_dump(),**rnn_cfg.model_dump()}
     metrics={
         "train_time":create_result["training_time"],
@@ -48,7 +40,7 @@ def run_single_experiment(param):
         "predict_figure":first_result.predict_figure
     }
     npys={"true_data":first_result.true_data,"predict_data":first_result.predict_data}
-    save=SaveClass(
+    save=ExperimentsSaver(
         model=model,
         metrics=metrics,
         params=params,
@@ -58,18 +50,6 @@ def run_single_experiment(param):
         
     )
     save.save(save_cfg)
-    '''
-    wrap_save_predict_data(
-        run_id,
-        first_result["true_data"],
-        first_result["predict_data"],
-        first_result["predict_time"],
-        first_result["rmse_arr"][rnn_cfg.out_steps_num-1],
-        rmse_mean_arr[rnn_cfg.out_steps_num-1],
-        first_result["predict_result_figure"],
-        save_cfg
-    )
-    '''
 
 if __name__ == "__main__":
     print(f"\n\n{len(PARAMS_LIST)}のパラメータの組み合わせを実行します\n常に{N_JOBS}個の処理を並列実行します")

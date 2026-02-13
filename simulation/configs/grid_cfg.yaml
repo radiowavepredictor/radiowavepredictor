@@ -18,20 +18,20 @@ params:
     in_features: 1 #入力特徴量の数(入力するデータが何種類あるか)
     input_len: [10,50]
     hidden_nums: 
-      - [20]
-    out_steps_num: 1 #何点予測するか
+      - [96,64]
+    out_steps_num: 5 #何点予測するか
     batch_size: 256
     epochs: 300
-    learning_rate: 0.0005
+    learning_rate: 0.0001
     patience: 10
 
   save:
     recursive_num: 500 #再帰予測で予測する回数(現状使ってない)
-    plot_start: 0 #予測結果のグラフの表示スタート開始位置
-    plot_range: 200 #グラフとして表示する範囲
+    plot_start: 100 #予測結果のグラフの表示スタート開始位置
+    plot_range: 50 #グラフとして表示する範囲
 
     use_mlflow: true #mlflowを使うかどうか(mlflowが使えない環境ではFalseを指定)
-    experiment_name: simu-16-0.03925
+    experiment_name: simu-16-0.03925-v2
 
     base_dir: exp_runs #mlflowを使わないときの保存フォルダ名
 

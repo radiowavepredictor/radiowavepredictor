@@ -1,0 +1,10 @@
+{
+  "files.exclude": {
+    "**/__pycache__": true
+  },
+  "workbench.iconTheme": "material-icon-theme",
+  "files.autoSave": "afterDelay",
+  "python.languageServer": "Pylance",
+  "python.analysis.typeCheckingMode": "basic",
+  "python.analysis.diagnosticMode": "openFilesOnly"
+}

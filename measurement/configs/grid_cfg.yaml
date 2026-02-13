@@ -3,21 +3,15 @@ n_jobs: 4 # いくつ並列処理させるか
 params: 
   measure:
     cource:
-      - train: [1,2,4,5,6,7,8,9,10,11,12,13,14,15]
-      #- train: [2,4,5]
+      #- train: [1,2,4,5,6,7,8,9,10,11,12,13,14,15]
+      - train: [2,4,5]
         val: [3,17]
         predict: 16
-      - train: [1,2,4,6,7,8,9,10,11,12,13,14,15,16]
-        val: [3,17]
-        predict: 5
-      - train: [2,4,5,6,7,8,9,10,11,12,13,14,15,16]
-        val: [3,17]
-        predict: 1
          
     start_ratio: 0
     end_ratio: 1
     data_axis: distance
-    sampling_rate: 0.03925
+    sampling_rate: 0.03925 
     
   model:
     rnn_type: SimpleRNN
@@ -28,9 +22,9 @@ params:
       - [20]
     out_steps_num: 1
     batch_size: 128
-    epochs: 300
-    learning_rate: [0.0005]
-    patience: 10
+    epochs: 10
+    learning_rate: 0.0005
+    patience: 2
   
   save:
     recursive_num: 500
@@ -38,7 +32,7 @@ params:
     plot_range: 50
 
     use_mlflow: true
-    experiment_name: measure-5-point-dist
+    experiment_name: test-meas-v3
     #experiment_name: test-meas
 
-    base_dir: exp_runs
+    base_dir: runs

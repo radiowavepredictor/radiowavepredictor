@@ -5,8 +5,8 @@ from dataclasses import replace
 from matplotlib.ticker import ScalarFormatter
 import matplotlib.pyplot as plt
 
-from simulation.configs.config import SIMULATION_CFG
-from simulation.function import calc_nakagami_rice_fading
+from configs.config import SIMULATION_CFG
+from function import calc_nakagami_rice_fading
 
 k_rice_list = [-np.inf, 0, 3, 5, 10, 20, 40]
 

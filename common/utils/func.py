@@ -34,29 +34,7 @@ def make_dataset(changed_data, input_len):
     re_target = np.array(target).reshape(len(data), 1)
 
     return (re_data, re_target)
-'''    
-# 構造体または辞書型をflatな辞書型に変換して返す Enumがあった場合は文字列に変換する
-def struct_to_flat_dict(obj)->dict:
-    if isinstance(obj,dict):
-        dict_=obj
-    if is_dataclass(obj): #???多分他の構造体もあるから汎用的なものを探すかどれかに絞ったほうがいい
-        dict_=asdict(obj) #type:ignore[arg--type]
-    elif isinstance(obj,BaseModel):
-        dict_=obj.model_dump()
-    else:
-        raise TypeError("dataclass、BaseModel、または辞書以外の値が入っています")
-
-    result={}
-    def walk_(d):
-        for k, v in d.items():
-            if isinstance(v, dict):
-                walk_(v)
-            else:
-                result[k] = v
-
-    walk_(dict_)
-    return result
-'''
+    
 # ネストした辞書型を1次元にする
 def flatten_dict(d: dict, sep: str = "/") -> dict:
     result = {}

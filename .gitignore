@@ -1,27 +1,19 @@
 __pychache__/
 *.py[cod]
-
 *.h5
 *.keras
 *.pkl
+*.npy
+
 test*
-
-.vscode/*
-
-predict_all.py
-
-tuner_result/
-
-sin.py
-sin_predict.py
 
 simu_waves/
 
-exp_runs/
+runs/
 mlruns/
 mlflow.db
-fig*
-fig/*
-measurement/fig/*
-memo*
-new-simu-3/*
+fig/
+dd_0.03925/
+exp_runs/
+
+common.egg-info/

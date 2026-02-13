@@ -11,7 +11,7 @@ from keras.callbacks import EarlyStopping
 from keras.utils import timeseries_dataset_from_array
 
 from common.schema.config import RnnConfig
-from common.function.func import predict_plot_setting
+from common.utils.func import predict_plot_setting
 
 
 def create_model(

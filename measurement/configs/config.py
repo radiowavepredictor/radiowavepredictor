@@ -2,11 +2,11 @@
 from ruamel.yaml import YAML
 from pathlib import Path
 
-from common.schema.config import RnnConfig,SaveConfig
-from measurement.configs.schema import MeasureConfig
+from common import RnnConfig,SaveConfig
+from .schema import MeasureConfig
 
 yaml=YAML(typ="safe")
-with open(Path("measurement")/"configs"/"config.yaml", encoding="utf-8") as f:
+with open(Path(__file__).parent/"config.yaml", encoding="utf-8") as f:
     cfg = yaml.load(f)
 
 # ===== この設定定数を使っていく =====
