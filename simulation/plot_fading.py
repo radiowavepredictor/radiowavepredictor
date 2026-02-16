@@ -3,12 +3,13 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from function import *
+from function import make_nlos_fading
 from configs.config import SIMULATION_CFG
 
-fading=calc_fading(SIMULATION_CFG)
+rnd=np.random.RandomState(0)
+nlos_fading=make_nlos_fading(SIMULATION_CFG,rnd)
 
-power = np.abs(fading)**2
+power = np.abs(nlos_fading)**2
 
 power_db = 10 * np.log10(power)
 

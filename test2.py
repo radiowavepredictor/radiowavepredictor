@@ -35,7 +35,7 @@ R_I_SCALE = 2.2         # NLoS の強さ（固定したい値）
 K_TARGET_DB = 4.0       # ← ここに“目標K[dB]”を指定して r0 を決める
 R0 = 2.0                # K_target_dB=None のとき r0 を手動指定
 
-if K_TARGET_DB is not None:
+if K_TARGET_DB:
     K_lin = 10 ** (K_TARGET_DB / 10.0)
     if R_I_MODE== "constant":
         # P_NLoS ≈ r_i_const^2 とみなして r0 を計算
@@ -124,7 +124,7 @@ K_lin_list, K_dB_list = [], []
 for i in range(total_waves):
     #los 見通し内 nlosが見通し外
     sim_db, h_los, h_nlos = generate_rice_wave(NUM_SAMPLES, F_C, L, DD,R0, SEED+ i)
-    print(sim_db)
+    print(h_nlos[:5])
     '''
     K_lin, K_dB = estimate_K_power(h_los, h_nlos)
     K_lin_list.append(K_lin)

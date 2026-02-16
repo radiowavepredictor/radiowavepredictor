@@ -4,8 +4,6 @@ WORKDIR /RadioWavePredictor
 
 RUN pip install --no-cache-dir matplotlib pandas
 
-RUN echo 'export PYTHONPATH=/RadioWavePredictor' >> /root/.bashrc
-
 EXPOSE 6006
 
 CMD ["/bin/bash"]

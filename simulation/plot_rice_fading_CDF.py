@@ -1,12 +1,13 @@
-###### 中上ライス環境で電力と累積確率関数のグラフを表示する #######
-###### データが正しく生成されているかの確認用コード #######
+'''
+中上ライス環境で電力と累積確率関数のグラフを表示する
+データが正しく生成されているかを確認する用のコード
+'''
 import numpy as np
-from dataclasses import replace
 from matplotlib.ticker import ScalarFormatter
 import matplotlib.pyplot as plt
 
 from configs.config import SIMULATION_CFG
-from function import calc_nakagami_rice_fading
+from function import make_rice_fading
 
 k_rice_list = [-np.inf, 0, 3, 5, 10, 20, 40]
 
@@ -16,8 +17,9 @@ for k_rice_i in k_rice_list:
         
     fading_data=[]
     for _ in range(SIMULATION_CFG.data_set_num):
-        simulation_cfg_i=replace(SIMULATION_CFG,k_rice=k_rice_i)
-        fading_data.extend(calc_nakagami_rice_fading(simulation_cfg_i))
+        simulation_cfg_i=SIMULATION_CFG.model_copy(update={"k_rice":k_rice_i})
+        rnd=np.random.RandomState(0)
+        fading_data.extend(make_rice_fading(simulation_cfg_i,rnd))
     fading_data=np.array(fading_data)
     power_linear = np.abs(fading_data)**2
 

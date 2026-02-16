@@ -9,7 +9,6 @@ from urllib.parse import unquote, urlparse
 from common.utils.func import flatten_dict, to_yaml_safe
 from common.schema.config import SaveConfig
 
-
 def save_dict_recursively(d: dict, base_path: Path, suffix: str):
     """ネスト辞書を再帰的に保存"""
     for k, v in d.items():

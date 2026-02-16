@@ -5,7 +5,6 @@ import joblib
 from keras.models import load_model
 import time
 
-from test import read_csv
 from common import predict
 from common import RnnConfig
 from common.registory import RNNType,OptimizerType
@@ -47,8 +46,7 @@ model_in_50,scaler2=search_mlflow(run_id_in_50)
 print("\n\n")
 print("########予測の実行結果########")
 
-#simu_data=np.load("power_db.npy")
-simu_data=read_csv(0)
+simu_data=np.load("power_db.npy")
 print(simu_data)
 simu_data=simu_data.reshape(-1,1)
 
