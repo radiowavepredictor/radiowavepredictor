@@ -4,7 +4,7 @@ from pathlib import Path
 from common import create_model
 from common import ExperimentsSaver
 from configs.config import MEASURE_CFG,RNN_CFG,SAVE_CFG
-from .function import make_learning_dataset
+from function import make_learning_dataset
 
 train_dataset,val_dataset,scaler=make_learning_dataset(MEASURE_CFG,RNN_CFG)
 

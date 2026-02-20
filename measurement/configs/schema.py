@@ -9,7 +9,7 @@ class CourceConfig(BaseModel):
     predict:int
 
 class MeasureConfig(BaseModel):
-    model_config={'frozen':True}
+    model_config={'frozen':True} 
     
     cource:CourceConfig
     start_ratio:float

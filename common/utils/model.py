@@ -94,7 +94,7 @@ def predict(
         norm_data,
         targets=None,
         sequence_length=rnn_cfg.input_len,
-        batch_size=1,
+        batch_size=rnn_cfg.predict_batch_size,
         shuffle=False,
     )
 

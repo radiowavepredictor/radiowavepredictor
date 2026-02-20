@@ -7,7 +7,7 @@ from pathlib import Path
 
 from common.registory import RNN_CLASS_MAP,OPTIMIZER_MAP,RNNType,OptimizerType
 
-class RnnConfig(BaseModel):
+class RnnConfig(BaseModel):     #TODO 後でmodelconfigに変更
     model_config={'frozen':True}
     
     rnn_type:RNNType
@@ -17,6 +17,7 @@ class RnnConfig(BaseModel):
     input_len:int
     hidden_nums:list[int]
     batch_size:int
+    predict_batch_size:int
     epochs:int
     learning_rate:float
     patience:int
