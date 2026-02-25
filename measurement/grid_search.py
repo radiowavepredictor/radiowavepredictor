@@ -26,7 +26,7 @@ def run_single_experiment(param):
 
     model = create_result["model"]
     
-    csv_path= Path("result")/f"WAVE{measure_cfg.cource.predict:04d}"/f"result_n{'t' if measure_cfg.data_axis=='time' else 'd'}-001.csv" 
+    csv_path= Path(__file__).parent/"result"/f"WAVE{measure_cfg.cource.predict:04d}"/f"result_n{'t' if measure_cfg.data_axis=='time' else 'd'}-001.csv"
     data_csv = pd.read_csv(csv_path, usecols=["ReceivedPower[dBm]"])
     measure_data = data_csv.values.astype(np.float64) # csv用のデータ構造からnumpy配列に変換
 

@@ -1,13 +1,22 @@
-n_jobs: 4 # いくつ並列処理させるか
+n_jobs: 6 # いくつ並列処理させるか
 
 params: 
   measure:
     cource:
       #- train: [1,2,4,5,6,7,8,9,10,11,12,13,14,15]
-      - train: [2,4,5]
-        val: [3,17]
-        predict: 16
+      - train: [2,5,6,13,15]
+        val: [4,8,11,14]
+        predict: 1
          
+      - train: [2,5,6,13,15]
+        val: [4,8,11,14]
+        predict: 3
+
+      - train: [2,5,6,13,15]
+        val: [4,8,11,14]
+        predict: 7
+
+
     start_ratio: 0
     end_ratio: 1
     data_axis: distance
@@ -17,14 +26,15 @@ params:
     rnn_type: SimpleRNN
     optimizer_type: Adam
     in_features: 1
-    input_len: [10,50]
+    input_len: [5,10]
     hidden_nums: 
       - [20]
     out_steps_num: 1
     batch_size: 128
-    epochs: 10
+    predict_batch_size: 64
+    epochs: 100
     learning_rate: 0.0005
-    patience: 2
+    patience: 20
   
   save:
     recursive_num: 500

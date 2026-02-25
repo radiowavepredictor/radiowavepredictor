@@ -12,6 +12,7 @@ class SimulationConfig(BaseModel):
     f:float
     target_k_db: float
     predicted_dataset_num:int
+    seed: int
 
     @property
     def lambda_0(self):

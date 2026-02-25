@@ -7,6 +7,7 @@ simulation:
   f: 1.298e9  # キャリア周波数 [Hz]
   target_k_db: 4 #目標とするライスファクタ
   predicted_dataset_num: 1 # RMSEを出すときにいくつのデータセットを予測して平均値を出すか
+  seed: 0
 
 model:
   rnn_type: SimpleRNN 
@@ -16,6 +17,7 @@ model:
   hidden_nums: [10]
   out_steps_num: 5 #何点予測するか
   batch_size: 128
+  predict_batch_size: 64
   epochs: 10
   learning_rate: 0.001
   patience: 2

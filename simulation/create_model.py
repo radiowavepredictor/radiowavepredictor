@@ -7,7 +7,7 @@ from common import ExperimentsSaver
 from function import make_rice_learning_dataset
 from configs.config import SIMULATION_CFG,RNN_CFG,SAVE_CFG
 
-rnd=RandomState(0)
+rnd=RandomState(SIMULATION_CFG.seed)
 dataset,val_dataset,scaler=make_rice_learning_dataset(SIMULATION_CFG,RNN_CFG,rnd)
 
 result=create_model(
