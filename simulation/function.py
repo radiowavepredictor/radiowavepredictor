@@ -8,50 +8,48 @@ from common.utils.func import array_of_array_to_dataset, mw_to_dbm
 from common import predict
 from common import RnnConfig, SaveConfig
 from configs.schema import SimulationConfig
+from configs.fading_schema import RiceConfig,LosConfig,NLosConfig
 
 
 # 反射波のフェージング応答(1波形分)を返す
-def make_nlos_fading(simu_cfg: SimulationConfig, rnd: RandomState):
-    lm = simu_cfg.l-1 # L-直接波の数=L-1
+def make_nlos_fading(nlos_cfg:NLosConfig , rnd: RandomState):
+    lm = nlos_cfg.l-1 # L-直接波の数=L-1
     theta = rnd.rand(lm) * 2 * np.pi
     phi = rnd.rand(lm) * 2 * np.pi
 
     h = []
     x = 0.0
-    for _ in range(simu_cfg.data_num):
-        x += simu_cfg.delta_d
+    for _ in range(nlos_cfg.data_num):
+        x += nlos_cfg.delta_d
         r_i = 1.0  # (多分)1で固定で良い たぶん
         h_i = np.sum(
             r_i
-            * np.exp(1j * (theta + (2 * np.pi / simu_cfg.lambda_0) * x * np.cos(phi)))
+            * np.exp(1j * (theta + (2 * np.pi / nlos_cfg.lambda_0) * x * np.cos(phi)))
         )
         h_i /= np.sqrt(lm)
         h.append(h_i)
 
     return np.array(h)
-
-
+    
 # 直接波のフェージング応答(1波形分)を返す
-def make_los_fading(simu_cfg: SimulationConfig):
+def make_los_fading(los_cfg:LosConfig):
     # theta0 = np.random.rand() * 2 * np.pi
     theta0 = 0  # 多分これでいい 多分
     h = []
     x = 0.0
-    for _ in range(simu_cfg.data_num):
-        x += simu_cfg.delta_d
-        h_i = simu_cfg.r0 * np.exp(1j * ((2 * np.pi / simu_cfg.lambda_0) * x + theta0))
+    for _ in range(los_cfg.data_num):
+        x += los_cfg.delta_d
+        h_i = los_cfg.r0 * np.exp(1j * ((2 * np.pi / los_cfg.lambda_0) * x + theta0))
+        
         h.append(h_i)
 
     return np.array(h)
 
+def make_rice_fading(rice_cfg: RiceConfig, rnd: RandomState):
+    h_nlos = make_nlos_fading(rice_cfg, rnd)
+    h_los = make_los_fading(rice_cfg)
 
-def make_rice_fading(simu_cfg: SimulationConfig, rnd: RandomState):
-    h_nlos = make_nlos_fading(simu_cfg, rnd)
-    h_los = make_los_fading(simu_cfg)
-
-    print(h_nlos[:5])
     return h_nlos + h_los
-
 
 ### シミュレーション用のデータセット(入力と答え)をdata_set_num分用意する関数
 def make_rice_dataset(

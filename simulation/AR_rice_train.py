@@ -19,6 +19,7 @@ from ruamel.yaml import YAML
 from common.utils.AR_model import fit_ar_model
 from common.utils.func import second_to_hms
 from simulation.configs.fading_schema import RiceConfig
+from function import make_rice_fading
 
 #NOTE 反射波のみで実験を行う場合、target_k_db=0にする
 # lは直接波数+反射波数
