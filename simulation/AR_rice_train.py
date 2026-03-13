@@ -10,7 +10,6 @@ from numpy.random import RandomState
 import pandas as pd
 import matplotlib.pyplot as plt
 import time
-from tqdm import tqdm
 from pathlib import Path
 from sklearn.preprocessing import StandardScaler
 import joblib
@@ -44,7 +43,7 @@ start_time = time.perf_counter()
 # データ読み込み
 nlos_waves_db = []
 # TODO:予測と学習で分ける
-for i in tqdm(range(NUM_PRED_WAVES + NUM_SIMU_WAVES), desc="Simulating"):
+for i in range(NUM_PRED_WAVES + NUM_SIMU_WAVES):
     nlos_h = make_rice_fading(RICE_CFG, RND)
     nlos_db = 10 * np.log10(np.clip(np.abs(nlos_h) ** 2, 1e-12, None))
     distance_data=np.arange(RICE_CFG.data_num) * RICE_CFG.delta_d # サンプリング時の距離のデータ
