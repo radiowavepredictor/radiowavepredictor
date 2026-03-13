@@ -14,6 +14,16 @@ def dbm_to_mw(dbm):
 def mw_to_dbm(mw):
     return 10 * np.log10(mw)
     
+def calc_rmse(y_true, y_pred):
+    valid = ~np.isnan(y_pred)
+    return np.sqrt(np.mean((y_true[valid] - y_pred[valid]) ** 2))
+   
+def second_to_hms(time_s):
+    h = int(time_s // 3600)
+    m = int((time_s % 3600) // 60)
+    s = time_s % 60
+    return h,m,s
+
 def make_dataset(changed_data, input_len):
     '''
     データからRNN用のデータセットを生成する関数
