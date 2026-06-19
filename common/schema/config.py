@@ -22,6 +22,7 @@ class RnnConfig(BaseModel):     #TODO 後でmodelconfigに変更
     learning_rate:float
     patience:int
     
+    
     @property
     def rnn_class(self) -> Layer:
         return RNN_CLASS_MAP[self.rnn_type.value]

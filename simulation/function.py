@@ -51,6 +51,23 @@ def make_rice_fading(rice_cfg: RiceConfig, rnd: RandomState):
 
     return h_nlos + h_los
 
+#シャドウイング波形を生成
+def make_shadowing(simu_cfg, rnd):
+    data_num=simu_cfg.data_num
+    sigma_shadow=simu_cfg.sigma_shadow
+    d_c=simu_cfg.d_c 
+    
+    a=0.5**(simu_cfg.delta_d/d_c)
+    sigma_w=sigma_shadow*np.sqrt(1-a**2)
+    shadow=np.zeros(data_num)
+    
+    for n in range(1,data_num):
+        w=rnd.normal(0,sigma_w)
+        shadow[n]=a*shadow[n-1]+w
+        
+    return shadow
+
+
 ### シミュレーション用のデータセット(入力と答え)をdata_set_num分用意する関数
 def make_rice_dataset(
     rnn_cfg: RnnConfig,
@@ -91,6 +108,49 @@ def make_rice_learning_dataset(
     return train_dataset, val_dataset, scaler
 
 
+###シミュレーション用のデータセット(シャドウイング版)
+def make_shadow_dataset(
+    rnn_cfg: RnnConfig,
+    simu_cfg: SimulationConfig,
+    rnd: RandomState,
+    scaler: StandardScaler | None = None,
+):
+    # シャドウイングの応答波の配列 [h1,h2,h3…] を作る
+    shadow_wave_arr = []
+    for _ in range(simu_cfg.data_set_num):
+        shadow_wave_arr.append(make_shadowing(simu_cfg,rnd))
+    shadow_wave_arr = np.array(shadow_wave_arr)
+
+    plt.figure(figsize=(10,4))
+    plt.plot(shadow_wave_arr[0])
+    plt.grid(True)
+    plt.show()
+
+   
+    # 標準化
+    if scaler is None:
+        scaler = StandardScaler()
+        scaler.fit(shadow_wave_arr.reshape(-1, 1))
+    data_norm_arr = scaler.transform(shadow_wave_arr.reshape(-1, 1)).reshape(
+        shadow_wave_arr.shape
+    )
+
+    dataset = array_of_array_to_dataset(data_norm_arr, rnn_cfg)
+    return dataset, scaler
+
+
+def make_shadow_learning_dataset(
+        simu_cfg,rnn_cfg,rnd
+):
+    train_dataset, scaler = make_shadow_dataset(rnn_cfg, simu_cfg, rnd)
+    # 検証用のデータセットをつくるために、データセットの数を訓練用の1/4に゙設定し直す
+    val_simu_cfg = simu_cfg.model_copy(
+        update={"data_set_num": simu_cfg.data_set_num // 4}
+    )
+    val_dataset, scaler = make_shadow_dataset(rnn_cfg, val_simu_cfg, rnd, scaler)
+    return train_dataset, val_dataset, scaler
+    
+
 def predict_multiple_waves(
     model,
     scaler: StandardScaler,
@@ -104,18 +164,22 @@ def predict_multiple_waves(
     1回目のデータセットだけ詳細な情報を返す
     """
     # 中上ライスのデータを取得(kerasモデルに渡せるように加工されていない状態)
-   
+    shadow_db=make_shadowing(simu_cfg,rnd)
     predict_num = simu_cfg.predicted_dataset_num
     rmse_sum = Counter({})
     for i in range(predict_num):
-        fading_data = make_rice_fading(simu_cfg,rnd)
-        power = np.abs(fading_data) ** 2
-        power_db = 10 * np.log10(power)
-        power_db = power_db.reshape(-1, 1)
+        #fading_data = make_rice_fading(simu_cfg,rnd)
+        #power = np.abs(fading_data) ** 2
+        #power_db = 10 * np.log10(power)
+        #power_db = shadow_db.reshape(-1, 1)
+
+        shadow_data=make_shadowing(simu_cfg,rnd)
+        input_data=shadow_data.reshape(-1,1)
+
         plt.close("all")
         result_i = predict(
             model,
-            power_db,
+            input_data,
             scaler,
             rnn_cfg,
             save_cfg.plot_start,
@@ -130,3 +194,7 @@ def predict_multiple_waves(
     for key, value in rmse_sum.items():
         rmse_mean_dict[f"mean-{key}"] = value / predict_num
     return first_result, rmse_mean_dict
+
+
+
+

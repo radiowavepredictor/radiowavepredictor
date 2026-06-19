@@ -5,7 +5,7 @@ from pathlib import Path
 from common.utils.func import build_section_grid
 from common import RnnConfig,SaveConfig
 
-from schema import SimulationConfig
+from .schema import SimulationConfig
 
 yaml=YAML(typ="safe")
 with open(Path(__file__).parent/"grid_cfg.yaml", encoding="utf-8") as f:

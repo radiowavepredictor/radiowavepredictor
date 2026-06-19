@@ -1,0 +1,20 @@
+datetime: '2026-01-16T14:11:59.220925'
+metrics: {rmse: 2.153547553843371, training_time: 650.71431016922}
+params:
+  batch_size: 128
+  data_axis: time
+  end_ratio: 1.0
+  epochs: 300
+  hidden_nums: [64, 64]
+  in_features: 1
+  input_len: 50
+  learning_rate: 0.0007
+  optimizer_type: Adam
+  out_steps_num: 3
+  patience: 10
+  predict: 16
+  rnn_type: SimpleRNN
+  start_ratio: 0.0
+  train: [1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 17]
+  val: [3, 17]
+run_name: '44155244'

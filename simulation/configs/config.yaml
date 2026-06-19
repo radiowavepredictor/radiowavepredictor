@@ -1,5 +1,5 @@
 simulation:
-  data_num: 800 #一つのデータセットのデータ数
+  data_num: 4000 #一つのデータセットのデータ数800
   data_set_num: 8 #作成するデータセットの数(測定におけるコース数)
   l: 30 # 多重波の数(直接波+反射波の数)
   delta_d: 0.03925 #サンプル間隔[m]
@@ -13,14 +13,14 @@ model:
   rnn_type: SimpleRNN 
   optimizer_type: Adam
   in_features: 1 #入力特徴量の数(入力するデータが何種類あるか)
-  input_len: 50
-  hidden_nums: [10]
+  input_len: 100
+  hidden_nums: [32,16] #10
   out_steps_num: 5 #何点予測するか
   batch_size: 128
   predict_batch_size: 64
-  epochs: 10
-  learning_rate: 0.001
-  patience: 2
+  epochs: 300
+  learning_rate: 0.0001
+  patience: 30
 
 save:
   recursive_num: 500 #再帰予測で予測する回数(現状使ってない)

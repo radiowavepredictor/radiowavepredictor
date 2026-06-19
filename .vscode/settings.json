@@ -10,7 +10,7 @@
   "python.analysis.diagnosticMode": "openFilesOnly",
   "python-envs.pythonProjects": [
     {
-      "path": "",
+      "path": ".",
       "envManager": "ms-python.python:conda",
       "packageManager": "ms-python.python:conda"
     }

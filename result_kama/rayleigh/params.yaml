@@ -1,0 +1,5 @@
+dd: 0.005
+ar_orders:
+- 10
+- 50
+num_pred_waves: 3
