@@ -2,7 +2,7 @@ n_jobs: 2
 
 params:
   simulation:
-    data_num: 1000 #一つのデータセットのデータ数
+    data_num: 500 #一つのデータセットのデータ数
     data_set_num: 16 #作成するデータセットの数(測定におけるコース数)
     l: 30 # 多重波の数
     delta_d: 0.03925 #サンプル間隔[m]
@@ -13,12 +13,12 @@ params:
     predicted_dataset_num: 3 # RMSEを出すときにいくつのデータセットを予測して平均値を出すか
     seed: 42
     sigma_shadow: 6
-    d_c: 20
+    d_c: 10
   model:
     rnn_type: SimpleRNN
     optimizer_type: Adam
     in_features: 1 #入力特徴量の数(入力するデータが何種類あるか)
-    input_len: [30,50]
+    input_len: [10,12]
     hidden_nums: 
       - [64,32]
     out_steps_num: 5 #何点予測するか
