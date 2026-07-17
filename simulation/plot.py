@@ -10,13 +10,13 @@ from common import RnnConfig
 from common.registory import RNNType,OptimizerType
 from common.utils.func import predict_plot_setting
 
-run_id_in_10="2c4e20e0ae104421b294644396c618d6"
-run_id_in_50="8be8de27172a4febb0f5c4da50857580"
+run_id_in_10="d3d0de9bd4fe42cfa46eb890ee9f3e24"
+run_id_in_50="91811ff715164e5ebab398a932d4b764"
 
 out_steps=1
 dataset_num=16
 sampling_rate=0.03925
-plot_start=128
+plot_start=100
 plot_range=50
 
 def search_mlflow(run_id):
@@ -60,12 +60,13 @@ result=predict(
         optimizer_type=OptimizerType.Adam,
         in_features=1,
         out_steps_num=out_steps,
-        input_len=10,
+        input_len=50,
         hidden_nums=[20],
         batch_size=128,
-        epochs=100,
+        predict_batch_size=64,
+        epochs=300,
         learning_rate=0.001,
-        patience=10
+        patience=50
     ),
     0,
     100,
@@ -82,12 +83,13 @@ result_2=predict(
         optimizer_type=OptimizerType.Adam,
         in_features=1,
         out_steps_num=out_steps,
-        input_len=50,
+        input_len=100,
         hidden_nums=[20],
         batch_size=128,
-        epochs=100,
+        predict_batch_size=64,
+        epochs=300,
         learning_rate=0.001,
-        patience=10
+        patience=50
     ),
     0,
     100,
@@ -128,7 +130,7 @@ plt.plot(
     markeredgecolor="green",
     linewidth=1.4,
 
-    label="予測値(入力長-10)",
+    label="予測値(入力長-50)",
 )
 
 plt.plot(
@@ -144,7 +146,7 @@ plt.plot(
     linewidth=1.4,
 
 
-    label="予測値(入力長-50)",
+    label="予測値(入力長-100)",
 )
 plt.grid(True)
 plt.legend()

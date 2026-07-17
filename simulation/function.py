@@ -70,6 +70,7 @@ def make_shadowing(simu_cfg, rnd):
         shadow[n]=a*shadow[n-1]+np.sqrt(1-a**2)*b[n]
         
     return shadow
+
  #マルチパスとシャドウイングの統合
 def make_rice_shadowing(simu_cfg, rnd):
     fading = make_rice_fading(simu_cfg, rnd)
@@ -213,6 +214,129 @@ def make_rice_shadow_learning_dataset(
 
 
 
+def make_path_loss(simu_cfg,):
+    fc = simu_cfg.f / 1e9      
+    c = simu_cfg.c
+
+    h_bs = 25.0                # BS基地局の高さ[m]
+    h_ut = 1.5                 # UE受信局の高さ[m]
+
+    # 2次元距離
+    d2d = np.arange(simu_cfg.data_num)*simu_cfg.delta_d+10
+
+    # 3次元距離
+    d3d = np.sqrt(d2d**2 + (h_bs-h_ut)**2)
+
+    # ブレークポイント
+    d_bp = 4 * (h_bs - 1) * (h_ut - 1) * fc * 1e9 / c
+
+    # LOS
+    pl_los = np.zeros_like(d3d)
+    a = d2d <= d_bp
+    pl_los[a] = (
+        28+22*np.log10(d3d[a])+20*np.log10(fc)
+    )
+    a = d2d > d_bp
+    pl_los[a] = (
+        28+40*np.log10(d3d[a])+20*np.log10(fc)-9*np.log10(d_bp**2+(h_bs-h_ut)**2)
+    )
+
+    # NLOS
+    pl_nlos = (
+        13.54+39.08*np.log10(d3d)+20*np.log10(fc)-0.6*(h_ut-1.5)
+    )
+    pl_nlos = np.maximum(pl_los, pl_nlos)
+
+    # LOS確率
+    p_los = np.zeros_like(d2d)
+
+    a = d2d <= 18
+    p_los[a] = 1.0
+
+    a = d2d > 18
+    p_los[a] = (
+        18/d2d[a]+ np.exp(-d2d[a]/63)* (1-18/d2d[a])
+    )
+
+    # LOS/NLOS選択
+    rand = np.random.rand(len(d2d))
+    path_loss = np.where(rand < p_los, pl_los, pl_nlos)
+
+   # if np.random.rand() < np.mean(p_los):
+   #     path_loss = pl_los
+   # else:
+   #     path_loss = pl_nlos
+
+
+    return path_loss
+
+def make_rice_shadow_pathloss(simu_cfg, rnd):
+    fading = make_rice_fading(simu_cfg, rnd)
+    power_db = mw_to_dbm(np.abs(fading) ** 2)
+    shadow = make_shadowing(simu_cfg, rnd)
+    path_loss = make_path_loss(simu_cfg)
+    receive_power = power_db + shadow - path_loss
+
+    return receive_power
+
+def make_rice_shadow_pathloss_dataset(
+    rnn_cfg: RnnConfig,
+    simu_cfg: SimulationConfig,
+    rnd: RandomState,
+    scaler: StandardScaler | None = None,
+):
+    # マルチパス＋シャドウイング＋距離特性の波形を作成
+    rice_shadow_pathloss_wave_arr = []
+
+    for _ in range(simu_cfg.data_set_num):
+        rice_shadow_pathloss_wave_arr.append(
+            make_rice_shadow_pathloss(simu_cfg, rnd)
+        )
+
+    rice_shadow_pathloss_wave_arr = np.array(rice_shadow_pathloss_wave_arr)
+
+    plt.figure(figsize=(10, 4))
+    plt.plot(rice_shadow_pathloss_wave_arr[0])
+    plt.grid(True)
+    plt.show()
+
+    # 標準化
+    if scaler is None:
+        scaler = StandardScaler()
+        scaler.fit(rice_shadow_pathloss_wave_arr.reshape(-1, 1))
+
+    data_norm_arr = scaler.transform(
+        rice_shadow_pathloss_wave_arr.reshape(-1, 1)
+    ).reshape(rice_shadow_pathloss_wave_arr.shape)
+
+    dataset = array_of_array_to_dataset(data_norm_arr, rnn_cfg)
+
+    return dataset, scaler
+
+def make_rice_shadow_pathloss_learning_dataset(
+    simu_cfg: SimulationConfig,
+    rnn_cfg: RnnConfig,
+    rnd: RandomState,
+):
+    train_dataset, scaler = make_rice_shadow_pathloss_dataset(
+        rnn_cfg,
+        simu_cfg,
+        rnd,
+    )
+
+    val_simu_cfg = simu_cfg.model_copy(
+        update={"data_set_num": simu_cfg.data_set_num // 4}
+    )
+
+    val_dataset, scaler = make_rice_shadow_pathloss_dataset(
+        rnn_cfg,
+        val_simu_cfg,
+        rnd,
+        scaler,
+    )
+
+    return train_dataset, val_dataset, scaler
+
 def predict_multiple_waves(
     model,
     scaler: StandardScaler,
@@ -240,27 +364,35 @@ def predict_multiple_waves(
         #input_data=rice_data.reshape(-1,1)
 
         #シャドウイングのみ
-        shadow_data=make_shadowing(simu_cfg,rnd)
-        input_data=shadow_data.reshape(-1,1)
+        #shadow_data=make_shadowing(simu_cfg,rnd)
+        #input_data=shadow_data.reshape(-1,1)
 
+        # パスロスのみ
+        #pathloss_data = make_path_loss(simu_cfg)
+        #input_data = pathloss_data.reshape(-1, 1)
 
         #マルチパスとシャドウイング統合
         #rice_shadow_data=make_rice_shadowing(simu_cfg,rnd)
         #input_data=rice_shadow_data.reshape(-1,1)
 
+        #マルチパス、シャドウイング、距離特性
+        rice_shadow_pathloss_data = make_rice_shadow_pathloss(simu_cfg, rnd)
+        input_data = rice_shadow_pathloss_data.reshape(-1, 1)
+    
         plt.close("all")
         result_i = predict(
-            model,
+           model,
             input_data,
             scaler,
             rnn_cfg,
             save_cfg.plot_start,
             save_cfg.plot_range,
-            simu_cfg.delta_d,
+             simu_cfg.delta_d,
         )
         if i == 0:
             first_result = result_i
         rmse_sum += Counter(result_i.rmse)
+
 
     rmse_mean_dict = {}
     for key, value in rmse_sum.items():

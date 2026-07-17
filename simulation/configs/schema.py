@@ -9,3 +9,4 @@ class SimulationConfig(RiceConfig):
     target_k_db: float=10.0
     sigma_shadow:float
     d_c:float
+    path_loss_exp: float
