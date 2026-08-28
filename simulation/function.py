@@ -79,11 +79,10 @@ def make_rice_shadowing(simu_cfg, rnd):
     shadow = make_shadowing(simu_cfg, rnd)
     receive_power = power_db + shadow
     return receive_power
-    
 
 
 
-### シミュレーション用のデータセット(入力と答え)をdata_set_num分用意する関数
+### シミュレーション用のデータセット(入力と答え)をdata_set_num分用意する関数(マルチパス版)
 def make_rice_dataset(
     rnn_cfg: RnnConfig,
     simu_cfg: SimulationConfig,
@@ -272,6 +271,153 @@ def make_path_loss(simu_cfg,):
 
     return path_loss
 
+#マルチパス＋パスロス
+def make_rice_pathloss(simu_cfg, rnd):
+    fading=make_rice_fading(simu_cfg, rnd)
+    power_db = mw_to_dbm(np.abs(fading) ** 2)
+    path_loss=make_path_loss(simu_cfg)
+    receive_power=power_db-path_loss
+    
+    return receive_power
+
+
+def make_rice_pathloss_dataset(
+    rnn_cfg: RnnConfig,
+    simu_cfg: SimulationConfig,
+    rnd: RandomState,
+    scaler: StandardScaler | None = None,
+):
+    # マルチパス＋距離特性の波形を作成
+    rice_pathloss_wave_arr = []
+
+    for _ in range(simu_cfg.data_set_num):
+        rice_pathloss_wave_arr.append(
+            make_rice_pathloss(simu_cfg, rnd)
+        )
+
+    rice_pathloss_wave_arr = np.array(rice_pathloss_wave_arr)
+
+    dist = np.arange(simu_cfg.data_num) * simu_cfg.delta_d+10
+
+    plt.figure(figsize=(10, 4))
+    plt.plot(dist,rice_pathloss_wave_arr[0])
+    plt.title("training arr")
+    plt.grid(True)
+    plt.show()
+
+    # 標準化
+    if scaler is None:
+        scaler = StandardScaler()
+        scaler.fit(rice_pathloss_wave_arr.reshape(-1, 1))
+
+    data_norm_arr = scaler.transform(
+        rice_pathloss_wave_arr.reshape(-1, 1)
+    ).reshape(rice_pathloss_wave_arr.shape)
+
+    dataset = array_of_array_to_dataset(data_norm_arr, rnn_cfg)
+
+    return dataset, scaler
+
+
+def make_rice_pathloss_learning_dataset(
+    simu_cfg: SimulationConfig,
+    rnn_cfg: RnnConfig,
+    rnd: RandomState,
+):
+    train_dataset, scaler = make_rice_pathloss_dataset(
+        rnn_cfg,
+        simu_cfg,
+        rnd,
+    )
+
+    val_simu_cfg = simu_cfg.model_copy(
+        update={"data_set_num": simu_cfg.data_set_num // 4}
+    )
+
+    val_dataset, scaler = make_rice_pathloss_dataset(
+        rnn_cfg,
+        val_simu_cfg,
+        rnd,
+        scaler,
+    )
+
+    return train_dataset, val_dataset, scaler
+
+
+#シャドウイング＋パスロス
+def make_shadow_pathloss(simu_cfg, rnd):
+    shadow=make_shadowing(simu_cfg,rnd)
+    path_loss=make_path_loss(simu_cfg)
+    receive_power=shadow-path_loss
+    
+    return receive_power
+
+
+def make_shadow_pathloss_dataset(
+    rnn_cfg: RnnConfig,
+    simu_cfg: SimulationConfig,
+    rnd: RandomState,
+    scaler: StandardScaler | None = None,
+):
+    # シャドウイング＋距離特性の波形を作成
+    shadow_pathloss_wave_arr = []
+
+    for _ in range(simu_cfg.data_set_num):
+        shadow_pathloss_wave_arr.append(
+            make_shadow_pathloss(simu_cfg, rnd)
+        )
+
+    shadow_pathloss_wave_arr = np.array(shadow_pathloss_wave_arr)
+
+    dist = np.arange(simu_cfg.data_num) * simu_cfg.delta_d+10
+
+    plt.figure(figsize=(10, 4))
+    plt.plot(dist,shadow_pathloss_wave_arr[0])
+    plt.title("training arr")
+    plt.grid(True)
+    plt.show()
+
+    # 標準化
+    if scaler is None:
+        scaler = StandardScaler()
+        scaler.fit(shadow_pathloss_wave_arr.reshape(-1, 1))
+
+    data_norm_arr = scaler.transform(
+        shadow_pathloss_wave_arr.reshape(-1, 1)
+    ).reshape(shadow_pathloss_wave_arr.shape)
+
+    dataset = array_of_array_to_dataset(data_norm_arr, rnn_cfg)
+
+    return dataset, scaler
+
+
+def make_shadow_pathloss_learning_dataset(
+    simu_cfg: SimulationConfig,
+    rnn_cfg: RnnConfig,
+    rnd: RandomState,
+):
+    train_dataset, scaler = make_shadow_pathloss_dataset(
+        rnn_cfg,
+        simu_cfg,
+        rnd,
+    )
+
+    val_simu_cfg = simu_cfg.model_copy(
+        update={"data_set_num": simu_cfg.data_set_num // 4}
+    )
+
+    val_dataset, scaler = make_shadow_pathloss_dataset(
+        rnn_cfg,
+        val_simu_cfg,
+        rnd,
+        scaler,
+    )
+
+    return train_dataset, val_dataset, scaler
+
+
+
+#マルチパス＋シャドウイング＋パスロス
 def make_rice_shadow_pathloss(simu_cfg, rnd):
     fading = make_rice_fading(simu_cfg, rnd)
     power_db = mw_to_dbm(np.abs(fading) ** 2)
@@ -280,6 +426,7 @@ def make_rice_shadow_pathloss(simu_cfg, rnd):
     receive_power = power_db + shadow - path_loss
 
     return receive_power
+
 
 def make_rice_shadow_pathloss_dataset(
     rnn_cfg: RnnConfig,
@@ -380,9 +527,17 @@ def predict_multiple_waves(
         #rice_shadow_data=make_rice_shadowing(simu_cfg,rnd)
         #input_data=rice_shadow_data.reshape(-1,1)
 
+        #マルチパスとパスロスの統合
+        rice_pathloss_data=make_rice_pathloss(simu_cfg,rnd)
+        input_data=rice_pathloss_data.reshape(-1,1)
+
+        #シャドウイングとパスロスの統合
+        #shadow_pathloss_data=make_shadow_pathloss(simu_cfg,rnd)
+        #input_data=shadow_pathloss_data.reshape(-1,1)
+
         #マルチパス、シャドウイング、距離特性
-        rice_shadow_pathloss_data = make_rice_shadow_pathloss(simu_cfg, rnd)
-        input_data = rice_shadow_pathloss_data.reshape(-1, 1)
+        #rice_shadow_pathloss_data = make_rice_shadow_pathloss(simu_cfg, rnd)
+        #input_data = rice_shadow_pathloss_data.reshape(-1, 1)
     
         plt.close("all")
         result_i = predict(
