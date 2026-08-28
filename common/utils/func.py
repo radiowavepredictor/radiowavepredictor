@@ -189,6 +189,6 @@ def predict_plot_setting(input_len,sampling_rate,base_plot_start,base_plot_range
     # 予測データの何番目から何番目までのデータを使うか
     pr_predict_index=slice(pr_predict_index_start,pr_predict_index_start+predict_plot_range,1)
     # 予測データをplotするときのx軸の表示範囲の計算
-    x_arange = np.arange(predict_plot_start, predict_plot_start+predict_plot_range) * sampling_rate
+    x_arange = np.arange(predict_plot_start, predict_plot_start+predict_plot_range)
     
     return x_arange,pr_predict_index

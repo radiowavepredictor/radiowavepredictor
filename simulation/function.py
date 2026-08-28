@@ -222,7 +222,9 @@ def make_path_loss(simu_cfg,):
     h_ut = 1.5                 # UE受信局の高さ[m]
 
     # 2次元距離
-    d2d = np.arange(simu_cfg.data_num)*simu_cfg.delta_d+10
+    # d2d = np.linspace(10, 100, simu_cfg.data_num)
+
+    d2d = np.arange(simu_cfg.data_num) * simu_cfg.delta_d+10
 
     # 3次元距離
     d3d = np.sqrt(d2d**2 + (h_bs-h_ut)**2)
@@ -259,13 +261,13 @@ def make_path_loss(simu_cfg,):
     )
 
     # LOS/NLOS選択
-    rand = np.random.rand(len(d2d))
-    path_loss = np.where(rand < p_los, pl_los, pl_nlos)
+   # rand = np.random.rand(len(d2d))
+   # path_loss = np.where(rand < p_los, pl_los, pl_nlos)
 
-   # if np.random.rand() < np.mean(p_los):
-   #     path_loss = pl_los
-   # else:
-   #     path_loss = pl_nlos
+    if np.random.rand() < np.mean(p_los):
+        path_loss = pl_los
+    else:
+        path_loss = pl_nlos
 
 
     return path_loss
@@ -295,8 +297,11 @@ def make_rice_shadow_pathloss_dataset(
 
     rice_shadow_pathloss_wave_arr = np.array(rice_shadow_pathloss_wave_arr)
 
+    dist = np.arange(simu_cfg.data_num) * simu_cfg.delta_d+10
+
     plt.figure(figsize=(10, 4))
-    plt.plot(rice_shadow_pathloss_wave_arr[0])
+    plt.plot(dist,rice_shadow_pathloss_wave_arr[0])
+    plt.title("training arr")
     plt.grid(True)
     plt.show()
 

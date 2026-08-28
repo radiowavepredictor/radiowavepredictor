@@ -118,8 +118,9 @@ def predict(
     )
     rmse_dict = {f"rmse-{i+1}": v for i, v in enumerate(rmse_arr)}
 
-    x_arange_true = np.arange(plot_start, plot_start + plot_range) * sampling_rate
+    x_arange_true = np.arange(plot_start, plot_start + plot_range) 
     # plotするときに単位を距離にするための処理
+    # 今はサンプル数にしている、距離にしたいときは*sampling_rateを追加する
     predict_fig_dict = {}
 
     for i in range(rnn_cfg.out_steps_num):
@@ -129,8 +130,10 @@ def predict(
 
         fig = plt.figure()
 
-        plt.xlabel("Time[s]")
+        plt.xlabel("sample")
         plt.ylabel("ReceivedPower[dBm]")
+
+        arange=np.arange(plot_range)
 
         # true_data
         plt.plot(
@@ -150,6 +153,7 @@ def predict(
 
         plt.legend()
         plt.title(f"Prediction Step {i+1}")
+        plt.show()
 
         predict_fig_dict[f"step-{i+1}"] = fig
 

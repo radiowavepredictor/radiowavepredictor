@@ -12,8 +12,8 @@ from common.utils.func import predict_plot_setting
 from common import RnnConfig
 from common.registory import RNNType,OptimizerType
 
-run_id_in_10="4af1c7c123f246fc8a4c456acd213183"
-run_id_in_50="1ba91c6f92bb4e4c9c10cea245dc6c41"
+run_id_in_10="ad286c39797347328f5efa32eee36399"
+run_id_in_50="68afc6c678a841278330c7a525f2a714"
 
 cource=1
 
@@ -48,7 +48,13 @@ if (true!=true2).any():
     print("data違う")
     sys.exit()
 '''
-csv_path= Path("result")/f"WAVE{cource:04d}"/f"result_nd-001.csv" 
+
+csv_path = Path("measurement") / "result" / f"WAVE{cource:04d}" / "result_nd-001.csv"
+#csv_path= Path("result")/f"WAVE{cource:04d}"/f"result_nd-001.csv" 
+from pathlib import Path
+
+for p in Path(".").rglob("*.csv"):
+    print(p)
 data_csv = pd.read_csv(csv_path, usecols=["ReceivedPower[dBm]"])
 measure_data = data_csv.values.astype(np.float64) # csv用のデータ構造からnumpy配列に変換
 in_10_start=time.time()
@@ -65,6 +71,7 @@ result=predict(
         input_len=10,
         hidden_nums=[20],
         batch_size=128,
+        predict_batch_size=64,
         epochs=100,
         learning_rate=0.001,
         patience=10
@@ -87,6 +94,7 @@ result_2=predict(
         input_len=50,
         hidden_nums=[20],
         batch_size=128,
+        predict_batch_size=64,
         epochs=100,
         learning_rate=0.001,
         patience=10
@@ -152,6 +160,8 @@ plt.plot(
 )
 plt.grid(True)
 plt.legend()
+fig_dir = Path("fig")
+fig_dir.mkdir(parents=True, exist_ok=True)
 fig.savefig(Path("fig")/f"v2-m-c-{cource}-o-{out_steps}.svg", bbox_inches="tight")
 
 print(f"スライドしたRMSE{np.sqrt(np.mean((measure_data[10-out_steps:-out_steps] - measure_data[10:]) ** 2))}")

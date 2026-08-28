@@ -1,8 +1,8 @@
 measure:
   cource:
-    train: [1,3,7,9,15]
-    val: [2,8,10,14]
-    predict: 16 #予測したいコース番号
+    train: [3,7,10,15]
+    val: [4,9,14]
+    predict: 5 #予測したいコース番号
   start_ratio: 0 
   end_ratio: 1
   data_axis: time

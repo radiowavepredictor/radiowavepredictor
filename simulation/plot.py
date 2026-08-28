@@ -2,6 +2,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import japanize_matplotlib # importするだけで意味があるので消さない
 import joblib
+from numpy.random import RandomState
+from function import make_rice_shadow_pathloss
+from configs.config import SIMULATION_CFG
 from keras.models import load_model
 import time
 
@@ -10,12 +13,12 @@ from common import RnnConfig
 from common.registory import RNNType,OptimizerType
 from common.utils.func import predict_plot_setting
 
-run_id_in_10="d3d0de9bd4fe42cfa46eb890ee9f3e24"
-run_id_in_50="91811ff715164e5ebab398a932d4b764"
+run_id_in_50="5dc68e0a2c7942179531a9f0a0daf683"
+run_id_in_100="f777ea4d8a2e4f64a79667ff31ac2e4c"
 
 out_steps=1
 dataset_num=16
-sampling_rate=0.03925
+sampling_rate=0.01
 plot_start=100
 plot_range=50
 
@@ -24,10 +27,10 @@ def search_mlflow(run_id):
     from mlflow.tracking import MlflowClient
 
     client = MlflowClient()
-    #model_path = client.download_artifacts(run_id, "model.keras")
-    model_path = client.download_artifacts(run_id, "artifacts/model.keras")
-    #scaler_path = client.download_artifacts(run_id,"scaler.pkl")
-    scaler_path = client.download_artifacts(run_id,"artifacts/scaler.pkl")
+    model_path = client.download_artifacts(run_id, "model.keras")
+    #model_path = client.download_artifacts(run_id, "artifacts/model.keras")
+    scaler_path = client.download_artifacts(run_id,"scaler.pkl")
+    #scaler_path = client.download_artifacts(run_id,"artifacts/scaler.pkl")
     #true_path=client.download_artifacts(run_id,"true_data.npy")
     #predicted_path=client.download_artifacts(run_id,f"predict_data/step-{out_steps}.npy")
 
@@ -40,13 +43,15 @@ def search_mlflow(run_id):
     return model,scaler
    
 #model_in_10,scaler,true,predict1=search_mlflow(run_id_in_10)
-model_in_10,scaler=search_mlflow(run_id_in_10)
+model_in_10,scaler=search_mlflow(run_id_in_50)
 #model_in_50,scaler2,true2,predict2=search_mlflow(run_id_in_50)
-model_in_50,scaler2=search_mlflow(run_id_in_50)
+model_in_50,scaler2=search_mlflow(run_id_in_100)
 print("\n\n")
 print("########予測の実行結果########")
 
-simu_data=np.load("power_db.npy")
+rnd = RandomState(0)
+simu_data = make_rice_shadow_pathloss(SIMULATION_CFG, rnd)
+simu_data = simu_data.reshape(-1, 1)
 print(simu_data)
 simu_data=simu_data.reshape(-1,1)
 
@@ -97,10 +102,37 @@ result_2=predict(
 )
 end_50=time.time()
 plt.close("all")
-x_arange_true = np.arange(plot_start,plot_start+plot_range)*sampling_rate
+#x_arange_true = np.arange(plot_start,plot_start+plot_range)*sampling_rate
 # 10サンプル入力の場合
-x_arange_10,predict_index_10 = predict_plot_setting(10,sampling_rate,plot_start,plot_range,out_steps)
-x_arange_50,predict_index_50 = predict_plot_setting(50,sampling_rate,plot_start,plot_range,out_steps)
+#x_arange_10 = x_arange_ture ,predict_index_10 = predict_plot_setting(50,sampling_rate,plot_start,plot_range,out_steps)
+#x_arange_50 = x_arange_ture ,predict_index_50 = predict_plot_setting(100,sampling_rate,plot_start,plot_range,out_steps)
+
+# 実測値の横軸
+x_arange_true = (
+    np.arange(plot_start, plot_start + plot_range)
+    * sampling_rate
+)
+
+# 予測データの切り出し位置だけ取得
+_, predict_index_10 = predict_plot_setting(
+    50,
+    sampling_rate,
+    plot_start,
+    plot_range,
+    out_steps
+)
+
+_, predict_index_50 = predict_plot_setting(
+    100,
+    sampling_rate,
+    plot_start,
+    plot_range,
+    out_steps
+)
+
+# 実測値と予測値で同じ横軸を使用
+x_arange_10 = x_arange_true
+x_arange_50 = x_arange_true
 
 fig = plt.figure(figsize=(8,3.5))
 plt.xlabel("移動距離[m]")
@@ -115,7 +147,7 @@ plt.plot(
     markersize=3.6,
     markerfacecolor="black",
     markeredgecolor="black",
-    label="実測値",
+    label="元値",
 
 )
 plt.plot(
