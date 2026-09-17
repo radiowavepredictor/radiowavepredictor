@@ -213,17 +213,32 @@ def make_rice_shadow_learning_dataset(
 
 
 
-def make_path_loss(simu_cfg,):
+def make_path_loss(simu_cfg,rnd):
     fc = simu_cfg.f / 1e9      
     c = simu_cfg.c
 
     h_bs = 25.0                # BS基地局の高さ[m]
     h_ut = 1.5                 # UE受信局の高さ[m]
 
-    # 2次元距離
-    # d2d = np.linspace(10, 100, simu_cfg.data_num)
+    data_num = simu_cfg.data_num
 
-    d2d = np.arange(simu_cfg.data_num) * simu_cfg.delta_d+10
+    r = 900*np.sqrt(rnd.rand())
+    theta = rnd.uniform(0,2*np.pi)
+
+    x1 = r*np.cos(theta)
+    y1 = r*np.sin(theta)
+
+    angle = rnd.uniform(0,2*np.pi)
+    dist = 100
+
+    for n in range(data_num):
+        distance_from_start = np.linspace(0,dist,data_num)
+
+        x = (x1+distance_from_start * np.cos(angle))
+        y = (y1+distance_from_start * np.sin(angle))
+
+    # 2次元距離
+    d2d = np.sqrt(x**2+y**2)
 
     # 3次元距離
     d3d = np.sqrt(d2d**2 + (h_bs-h_ut)**2)
@@ -273,7 +288,7 @@ def make_path_loss(simu_cfg,):
 
 
 def make_pathloss(simu_cfg, rnd):
-    path_loss=make_path_loss(simu_cfg)
+    path_loss=make_path_loss(simu_cfg,rnd)
     receive_power=-path_loss
     
     return receive_power
@@ -295,7 +310,7 @@ def make_pathloss_dataset(
 
     pathloss_wave_arr = np.array(pathloss_wave_arr)
 
-    dist = np.arange(simu_cfg.data_num) * simu_cfg.delta_d+10
+    dist = np.linspace(0,100,simu_cfg.data_num)
 
     plt.figure(figsize=(10, 4))
     plt.plot(dist,pathloss_wave_arr[0])
@@ -347,7 +362,7 @@ def make_pathloss_learning_dataset(
 def make_rice_pathloss(simu_cfg, rnd):
     fading=make_rice_fading(simu_cfg, rnd)
     power_db = mw_to_dbm(np.abs(fading) ** 2)
-    path_loss=make_path_loss(simu_cfg)
+    path_loss=make_path_loss(simu_cfg,rnd)
     receive_power=power_db-path_loss
     
     return receive_power
@@ -419,7 +434,7 @@ def make_rice_pathloss_learning_dataset(
 #シャドウイング＋パスロス
 def make_shadow_pathloss(simu_cfg, rnd):
     shadow=make_shadowing(simu_cfg,rnd)
-    path_loss=make_path_loss(simu_cfg)
+    path_loss=make_path_loss(simu_cfg,rnd)
     receive_power=shadow-path_loss
     
     return receive_power
@@ -494,7 +509,7 @@ def make_rice_shadow_pathloss(simu_cfg, rnd):
     fading = make_rice_fading(simu_cfg, rnd)
     power_db = mw_to_dbm(np.abs(fading) ** 2)
     shadow = make_shadowing(simu_cfg, rnd)
-    path_loss = make_path_loss(simu_cfg)
+    path_loss = make_path_loss(simu_cfg,rnd)
     receive_power = power_db + shadow - path_loss
 
     return receive_power
@@ -592,8 +607,8 @@ def predict_multiple_waves(
         #input_data=shadow_data.reshape(-1,1)
 
         # パスロスのみ
-        #pathloss_data = -make_path_loss(simu_cfg)
-        #input_data = pathloss_data.reshape(-1, 1)
+        pathloss_data = -make_path_loss(simu_cfg,rnd)
+        input_data = pathloss_data.reshape(-1, 1)
 
         #マルチパスとシャドウイング統合
         #rice_shadow_data=make_rice_shadowing(simu_cfg,rnd)
@@ -608,8 +623,8 @@ def predict_multiple_waves(
         #input_data=shadow_pathloss_data.reshape(-1,1)
 
         #マルチパス、シャドウイング、距離特性
-        rice_shadow_pathloss_data = make_rice_shadow_pathloss(simu_cfg, rnd)
-        input_data = rice_shadow_pathloss_data.reshape(-1, 1)
+        #rice_shadow_pathloss_data = make_rice_shadow_pathloss(simu_cfg, rnd)
+        #input_data = rice_shadow_pathloss_data.reshape(-1, 1)
     
         plt.close("all")
         result_i = predict(
