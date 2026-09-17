@@ -7,9 +7,9 @@ simulation:
   f: 1.298e9  # キャリア周波数 [Hz]
   target_k_db: 4 #目標とするライスファクタ
   predicted_dataset_num: 1 # RMSEを出すときにいくつのデータセットを予測して平均値を出すか
-  seed: 0
-  sigma_shadow: 8
-  d_c: 20
+  seed: 42
+  sigma_shadow: 6
+  d_c: 10
   path_loss_exp: 3  #パスロス指数
 
 model:
@@ -17,13 +17,13 @@ model:
   optimizer_type: Adam
   in_features: 1 #入力特徴量の数(入力するデータが何種類あるか)
   input_len: 100
-  hidden_nums: [32,16] #10
+  hidden_nums: [16,8] #10
   out_steps_num: 5 #何点予測するか
   batch_size: 128
   predict_batch_size: 64
   epochs: 300
-  learning_rate: 0.0001
-  patience: 30
+  learning_rate: 0.001
+  patience: 50
 
 save:
   recursive_num: 500 #再帰予測で予測する回数(現状使ってない)

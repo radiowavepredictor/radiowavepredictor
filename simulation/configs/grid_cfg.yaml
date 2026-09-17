@@ -23,7 +23,7 @@ params:
     in_features: 1 #入力特徴量の数(入力するデータが何種類あるか)
     input_len: [50,100]
     hidden_nums: 
-      - [20]
+      - [16,8]
     out_steps_num: 1 #何点予測するか
     batch_size: 128
     predict_batch_size: 64

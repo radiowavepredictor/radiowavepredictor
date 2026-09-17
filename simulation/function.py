@@ -271,6 +271,78 @@ def make_path_loss(simu_cfg,):
 
     return path_loss
 
+
+def make_pathloss(simu_cfg, rnd):
+    path_loss=make_path_loss(simu_cfg)
+    receive_power=-path_loss
+    
+    return receive_power
+
+
+def make_pathloss_dataset(
+    rnn_cfg: RnnConfig,
+    simu_cfg: SimulationConfig,
+    rnd: RandomState,
+    scaler: StandardScaler | None = None,
+):
+    # マルチパスの波形を作成
+    pathloss_wave_arr = []
+
+    for _ in range(simu_cfg.data_set_num):
+        pathloss_wave_arr.append(
+            make_pathloss(simu_cfg, rnd)
+        )
+
+    pathloss_wave_arr = np.array(pathloss_wave_arr)
+
+    dist = np.arange(simu_cfg.data_num) * simu_cfg.delta_d+10
+
+    plt.figure(figsize=(10, 4))
+    plt.plot(dist,pathloss_wave_arr[0])
+    plt.title("training arr")
+    plt.grid(True)
+    plt.show()
+
+    # 標準化
+    if scaler is None:
+        scaler = StandardScaler()
+        scaler.fit(pathloss_wave_arr.reshape(-1, 1))
+
+    data_norm_arr = scaler.transform(
+        pathloss_wave_arr.reshape(-1, 1)
+    ).reshape(pathloss_wave_arr.shape)
+
+    dataset = array_of_array_to_dataset(data_norm_arr, rnn_cfg)
+
+    return dataset, scaler
+
+
+def make_pathloss_learning_dataset(
+    simu_cfg: SimulationConfig,
+    rnn_cfg: RnnConfig,
+    rnd: RandomState,
+):
+    train_dataset, scaler = make_pathloss_dataset(
+        rnn_cfg,
+        simu_cfg,
+        rnd,
+    )
+
+    val_simu_cfg = simu_cfg.model_copy(
+        update={"data_set_num": simu_cfg.data_set_num // 4}
+    )
+
+    val_dataset, scaler = make_pathloss_dataset(
+        rnn_cfg,
+        val_simu_cfg,
+        rnd,
+        scaler,
+    )
+
+    return train_dataset, val_dataset, scaler
+
+
+
 #マルチパス＋パスロス
 def make_rice_pathloss(simu_cfg, rnd):
     fading=make_rice_fading(simu_cfg, rnd)
@@ -520,7 +592,7 @@ def predict_multiple_waves(
         #input_data=shadow_data.reshape(-1,1)
 
         # パスロスのみ
-        #pathloss_data = make_path_loss(simu_cfg)
+        #pathloss_data = -make_path_loss(simu_cfg)
         #input_data = pathloss_data.reshape(-1, 1)
 
         #マルチパスとシャドウイング統合
@@ -528,16 +600,16 @@ def predict_multiple_waves(
         #input_data=rice_shadow_data.reshape(-1,1)
 
         #マルチパスとパスロスの統合
-        rice_pathloss_data=make_rice_pathloss(simu_cfg,rnd)
-        input_data=rice_pathloss_data.reshape(-1,1)
+        #rice_pathloss_data=make_rice_pathloss(simu_cfg,rnd)
+        #input_data=rice_pathloss_data.reshape(-1,1)
 
         #シャドウイングとパスロスの統合
         #shadow_pathloss_data=make_shadow_pathloss(simu_cfg,rnd)
         #input_data=shadow_pathloss_data.reshape(-1,1)
 
         #マルチパス、シャドウイング、距離特性
-        #rice_shadow_pathloss_data = make_rice_shadow_pathloss(simu_cfg, rnd)
-        #input_data = rice_shadow_pathloss_data.reshape(-1, 1)
+        rice_shadow_pathloss_data = make_rice_shadow_pathloss(simu_cfg, rnd)
+        input_data = rice_shadow_pathloss_data.reshape(-1, 1)
     
         plt.close("all")
         result_i = predict(

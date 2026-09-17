@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import japanize_matplotlib # importするだけで意味があるので消さない
 import joblib
 from numpy.random import RandomState
-from function import make_rice_pathloss
+from function import make_rice_shadow_pathloss
 from configs.config import SIMULATION_CFG
 from keras.models import load_model
 import time
@@ -13,8 +13,8 @@ from common import RnnConfig
 from common.registory import RNNType,OptimizerType
 from common.utils.func import predict_plot_setting
 
-run_id_in_50="83dbf2b409de4b8d82c4989e1152b61b"
-run_id_in_100="5f5712865d0b47a298d1348dbb401c62"
+run_id_in_50="9b240cbfce18438fa0aa1adac5aac687"
+run_id_in_100="1cd66c05c0c24df383a82f8358d23a9e"
 
 out_steps=1
 dataset_num=16
@@ -50,7 +50,8 @@ print("\n\n")
 print("########予測の実行結果########")
 
 rnd = RandomState(0)
-simu_data = make_rice_pathloss(SIMULATION_CFG, rnd)
+#simu_data = -make_path_loss(SIMULATION_CFG)
+simu_data = make_rice_shadow_pathloss(SIMULATION_CFG, rnd)
 simu_data = simu_data.reshape(-1, 1)
 print(simu_data)
 simu_data=simu_data.reshape(-1,1)

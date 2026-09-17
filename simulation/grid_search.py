@@ -4,7 +4,7 @@ from numpy.random import RandomState
 from common import create_model
 from common import ExperimentsSaver
 from common import RnnConfig,SaveConfig
-from function import make_rice_pathloss_learning_dataset,predict_multiple_waves
+from function import make_rice_shadow_pathloss_learning_dataset,predict_multiple_waves
 from configs.schema import SimulationConfig
 from configs.grid_cfg import PARAMS_LIST,N_JOBS
 
@@ -17,7 +17,7 @@ def run_single_experiment(param):
     save_cfg:SaveConfig=param["save"]
 
     rnd = RandomState(0)
-    dataset, val_dataset, scaler= make_rice_pathloss_learning_dataset(simulation_cfg, rnn_cfg,rnd)
+    dataset, val_dataset, scaler= make_rice_shadow_pathloss_learning_dataset(simulation_cfg, rnn_cfg,rnd)
 
     create_result = create_model(
         dataset,
