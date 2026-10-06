@@ -230,12 +230,11 @@ def make_path_loss(simu_cfg,rnd):
 
     angle = rnd.uniform(0,2*np.pi)
     dist = 100
-
     for n in range(data_num):
-        distance_from_start = np.linspace(0,dist,data_num)
+        distance_from_start = np.linspace(0,dist,data_num)  #この計算だとBSとUTが10mより近くなる可能性があるのでのちに修正
 
-        x = (x1+distance_from_start * np.cos(angle))
-        y = (y1+distance_from_start * np.sin(angle))
+    x = (x1+distance_from_start * np.cos(angle))
+    y = (y1+distance_from_start * np.sin(angle))
 
     # 2次元距離
     d2d = np.sqrt(x**2+y**2)
@@ -278,7 +277,7 @@ def make_path_loss(simu_cfg,rnd):
    # rand = np.random.rand(len(d2d))
    # path_loss = np.where(rand < p_los, pl_los, pl_nlos)
 
-    if np.random.rand() < np.mean(p_los):
+    if rnd.rand() < np.mean(p_los):
         path_loss = pl_los
     else:
         path_loss = pl_nlos
@@ -312,9 +311,26 @@ def make_pathloss_dataset(
 
     dist = np.linspace(0,100,simu_cfg.data_num)
 
+    #plt.figure(figsize=(10, 4))
+    #plt.plot(dist,pathloss_wave_arr[0])
+    #plt.title("training arr")
+    #plt.grid(True)
+    #plt.show()
+     
+    #学習波形をすべてプロット
     plt.figure(figsize=(10, 4))
-    plt.plot(dist,pathloss_wave_arr[0])
-    plt.title("training arr")
+
+    for i in range(simu_cfg.data_set_num):
+        plt.plot(
+            dist,
+            pathloss_wave_arr[i],
+            alpha=1.0,
+            linewidth=0.8
+        )
+
+    plt.title(f"training arr (N={simu_cfg.data_set_num})")
+    plt.xlabel("Distance [m]")
+    plt.ylabel("Receive Power [dB]")
     plt.grid(True)
     plt.show()
 
@@ -384,13 +400,14 @@ def make_rice_pathloss_dataset(
 
     rice_pathloss_wave_arr = np.array(rice_pathloss_wave_arr)
 
-    dist = np.arange(simu_cfg.data_num) * simu_cfg.delta_d+10
+    dist = np.linspace(0, 100, simu_cfg.data_num)
 
     plt.figure(figsize=(10, 4))
     plt.plot(dist,rice_pathloss_wave_arr[0])
     plt.title("training arr")
     plt.grid(True)
     plt.show()
+
 
     # 標準化
     if scaler is None:
@@ -456,7 +473,7 @@ def make_shadow_pathloss_dataset(
 
     shadow_pathloss_wave_arr = np.array(shadow_pathloss_wave_arr)
 
-    dist = np.arange(simu_cfg.data_num) * simu_cfg.delta_d+10
+    dist = np.linspace(0, 100, simu_cfg.data_num)
 
     plt.figure(figsize=(10, 4))
     plt.plot(dist,shadow_pathloss_wave_arr[0])
@@ -531,7 +548,7 @@ def make_rice_shadow_pathloss_dataset(
 
     rice_shadow_pathloss_wave_arr = np.array(rice_shadow_pathloss_wave_arr)
 
-    dist = np.arange(simu_cfg.data_num) * simu_cfg.delta_d+10
+    dist = np.linspace(0, 100, simu_cfg.data_num)
 
     plt.figure(figsize=(10, 4))
     plt.plot(dist,rice_shadow_pathloss_wave_arr[0])
@@ -607,8 +624,8 @@ def predict_multiple_waves(
         #input_data=shadow_data.reshape(-1,1)
 
         # パスロスのみ
-        pathloss_data = -make_path_loss(simu_cfg,rnd)
-        input_data = pathloss_data.reshape(-1, 1)
+        #pathloss_data = -make_path_loss(simu_cfg,rnd)
+        #input_data = pathloss_data.reshape(-1, 1)
 
         #マルチパスとシャドウイング統合
         #rice_shadow_data=make_rice_shadowing(simu_cfg,rnd)
@@ -623,8 +640,8 @@ def predict_multiple_waves(
         #input_data=shadow_pathloss_data.reshape(-1,1)
 
         #マルチパス、シャドウイング、距離特性
-        #rice_shadow_pathloss_data = make_rice_shadow_pathloss(simu_cfg, rnd)
-        #input_data = rice_shadow_pathloss_data.reshape(-1, 1)
+        rice_shadow_pathloss_data = make_rice_shadow_pathloss(simu_cfg, rnd)
+        input_data = rice_shadow_pathloss_data.reshape(-1, 1)
     
         plt.close("all")
         result_i = predict(
