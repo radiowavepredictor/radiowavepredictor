@@ -13,13 +13,13 @@ params:
     predicted_dataset_num: 3 # RMSEを出すときにいくつのデータセットを予測して平均値を出すか
     seed: 42
     sigma_shadow: 6
-    d_c: 10
+    d_c: 37
     path_loss_exp: 3  #パスロス指数
 
 
   model:
     rnn_type: SimpleRNN
-    optimizer_type: Adam
+    optimizer_type: AdamW
     in_features: 1 #入力特徴量の数(入力するデータが何種類あるか)
     input_len: [50,100]
     hidden_nums: 
@@ -38,7 +38,7 @@ params:
     plot_range: 50 #グラフとして表示する範囲
 
     use_mlflow: true #mlflowを使うかどうか(mlflowが使えない環境ではFalseを指定)
-    experiment_name: simu-rice-shadow-pathloss-1
+    experiment_name: simu-chuukan
 
     base_dir: exp_runs #mlflowを使わないときの保存フォルダ名
 

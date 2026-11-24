@@ -273,9 +273,6 @@ def make_path_loss(simu_cfg,rnd):
         18/d2d[a]+ np.exp(-d2d[a]/63)* (1-18/d2d[a])
     )
 
-    # LOS/NLOS選択
-   # rand = np.random.rand(len(d2d))
-   # path_loss = np.where(rand < p_los, pl_los, pl_nlos)
 
     if rnd.rand() < np.mean(p_los):
         path_loss = pl_los
@@ -309,7 +306,7 @@ def make_pathloss_dataset(
 
     pathloss_wave_arr = np.array(pathloss_wave_arr)
 
-    dist = np.linspace(0,100,simu_cfg.data_num)
+    dist = np.arange(simu_cfg.data_num)*simu_cfg.delta_d
 
     #plt.figure(figsize=(10, 4))
     #plt.plot(dist,pathloss_wave_arr[0])
@@ -615,13 +612,11 @@ def predict_multiple_waves(
         #fading_data = make_rice_fading(simu_cfg,rnd)
         #power = np.abs(fading_data) ** 2
         #power_db = 10 * np.log10(power)
-        #power_db = power_db.reshape(-1, 1)
-        #rice_data=make_rice_fading(simu_cfg,rnd)
-        #input_data=rice_data.reshape(-1,1)
+        #input_data=power_db.reshape(-1,1)
 
         #シャドウイングのみ
-        #shadow_data=make_shadowing(simu_cfg,rnd)
-        #input_data=shadow_data.reshape(-1,1)
+        shadow_data=make_shadowing(simu_cfg,rnd)
+        input_data=shadow_data.reshape(-1,1)
 
         # パスロスのみ
         #pathloss_data = -make_path_loss(simu_cfg,rnd)
@@ -640,8 +635,8 @@ def predict_multiple_waves(
         #input_data=shadow_pathloss_data.reshape(-1,1)
 
         #マルチパス、シャドウイング、距離特性
-        rice_shadow_pathloss_data = make_rice_shadow_pathloss(simu_cfg, rnd)
-        input_data = rice_shadow_pathloss_data.reshape(-1, 1)
+        #rice_shadow_pathloss_data = make_rice_shadow_pathloss(simu_cfg, rnd)
+        #input_data = rice_shadow_pathloss_data.reshape(-1, 1)
     
         plt.close("all")
         result_i = predict(

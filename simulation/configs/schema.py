@@ -10,3 +10,4 @@ class SimulationConfig(RiceConfig):
     sigma_shadow:float
     d_c:float
     path_loss_exp: float
+    
